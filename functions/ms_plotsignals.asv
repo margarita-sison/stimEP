@@ -13,11 +13,9 @@ function ms_plotsignals(datadir, ephys, signaltype)
 %addpath("C:\Users\Miocinovic_lab\Documents\mssison\GitHub\stimEP\functions\")
 cd(strcat(datadir,ephys,"preprocessed"))
 [ssep_file, ssep_fileloc, ssep_fileidx] = uigetfile;
-filepath = strcat(ssep_fileloc,ssep_file);
-load(filepath)
+load(strcat(ssep_fileloc,ssep_file))
 
-load2base = sprintf('load(''%s'')', filepath);
-evalin('base', load2base)
+load2base = sprintf('load(''%)
 %%
 if signaltype == "ecog"
     signal2plot = ecog;
