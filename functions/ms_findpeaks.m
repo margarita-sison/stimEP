@@ -5,6 +5,8 @@ max_prom = (max(pk_proms));
 
 threshold = input('Enter threshold as decimal: ');
 min_prom = threshold*max_prom;
+
+figure;
 findpeaks(segment,'MinPeakProminence',min_prom)
 
 user_ans = input('Adjust threshold? Y/N: ',"s");
@@ -12,6 +14,8 @@ user_ans = input('Adjust threshold? Y/N: ',"s");
 while user_ans == "Y"
     threshold = input('Enter threshold as decimal: ');
     min_prom = threshold*max_prom;
+
+    figure;
     findpeaks(segment,'MinPeakProminence',min_prom) 
 
     user_ans = input('Adjust threshold? Y/N: ',"s");
