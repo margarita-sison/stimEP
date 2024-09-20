@@ -1,4 +1,4 @@
-function epoch_tensor = ms_getepochs(signal2epoch, timewindow, fs)
+function epoch_tensor = ms_getepochs(signal2epoch, timewindow, pk_locs, start_idx, end_idx, fs)
 %function [epoch_tensor, ppt] = ms_getepochs(signal2epoch, timewindow, fs, makeppt)
 
 % Function

@@ -15,16 +15,14 @@ chan_sets = {1:n_chans/2 n_chans/2+1:n_chans};
 for s = 1:length(chan_sets)
     nexttile
     chan_set = chan_sets{s};
-    
-    counter = 0;
+
     for c = chan_set
-        chan = EPs(c,:);
-        offset = max(chan,[],"all");
-        counter = counter+1;
+        max_yval = max(epoch_tensor,[],"all");
+        min_yval = min(epoch_tensor,[],"all");
         xaxis_ms = start_time:1/samples_per_ms:end_time;
-        plot(xaxis_ms, chan+offset*counter)
+        plot(xaxis_ms, EPs(c,:))
         hold on
+        plot(xaxis_ms, EPs(c,:)+
     end
-    hold off
 end
 end

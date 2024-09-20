@@ -1,10 +1,11 @@
-% addpath("/Users/margaritasison/GitHub/stimEP/functions/")
-% datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/";
-% ephys = "ephys015/";
+addpath("/Users/margaritasison/GitHub/stimEP/functions/")
+datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/";
+ephys = "ephys015/";
 
-addpath("C:\Users\Miocinovic_lab\Documents\mssison\GitHub\stimEP\functions\")
-datadir = "C:\Users\Miocinovic_lab\Documents\mssison\ORdata_copies_MS\";
-ephys = "ephys015\";
+% addpath("C:\Users\Miocinovic_lab\Documents\mssison\GitHub\stimEP\functions\")
+% datadir = "C:\Users\Miocinovic_lab\Documents\mssison\ORdata_copies_MS\";
+% ephys = "ephys015\";
+
 signaltype = "emg";
 
 ms_plotsignals(datadir, ephys, signaltype)
