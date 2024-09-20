@@ -1,9 +1,10 @@
-function ms_meanepochs(EP_dir, ephys_num, epoch_tensor)
+function ms_meanepochs(EP_dir, ephys_num, epoch_tensor, start_time, end_time, fs)
 
 load(EP_dir)
 chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; % customize
 EPs = squeeze(mean(epoch_tensor,2));
 
+samples_per_ms = fs/1000;
 n_chans = length(chan_annots);
 
 n_rows = 1;
