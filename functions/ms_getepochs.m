@@ -17,6 +17,7 @@ function [start_time, end_time, epoch_tensor] = ms_getepochs(signal2epoch, timew
 % epoch_tensor (3-dim double)   - 
 % ppt
 
+% Note: Try to integrate EEGLAB function to view epochs 
 n_chans = size(signal2epoch,1);
 
 samples_per_ms = fs/1000;

@@ -1,12 +1,19 @@
-% addpath("/Users/margaritasison/GitHub/stimEP/functions/")
-% datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/";
-% ephys = "ephys015/";
+%% Currently implemented processes in this pipeline:
+% - Visualizing EMG signals
+% - Aligning stimulus artifacts in EMG signals with ECOG or LFP signals
+% - Visualizing ECOG or LFP evoked potentials
 
-addpath("C:\Users\Miocinovic_lab\Documents\mssison\GitHub\stimEP\functions\")
-datadir = "C:\Users\Miocinovic_lab\Documents\mssison\ORdata_copies_MS\";
+%% Visualize EMG signals and select a template signal 
+
+% addpath("/Users/margaritasison/GitHub/stimEP/functions/") % add path to functions directory + "/" if Mac or "\" if Windows 
+% datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/"; % add path to directory containing ephys files + "/" if Mac or "\" if Windows 
+% ephys = "ephys015/"; % specify ephys code + "/" if Mac or "\" if Windows 
+
+addpath("C:\Users\Miocinovic_lab\Documents\mssison\GitHub\stimEP\functions\") 
+datadir = "C:\Users\Miocinovic_lab\Documents\mssison\ORdata_copies_MS\"; 
 ephys = "ephys015\";
 
-signaltype = "emg";
+signaltype = "emg"; % specify as char or string
 
 ms_plotsignals(datadir, ephys, signaltype)
 %%
