@@ -25,7 +25,7 @@ fs = sampling_rate_ecog;
 [start_time, end_time, epoch_tensor] = ms_getepochs(signal2epoch, timewindow, pk_locs, start_idx, end_idx, fs);
 
 %%
-EP_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
+%EP_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 ephys_num = 15;
 
 ms_meanepochs(EP_dir, ephys_num, epoch_tensor, start_time, end_time, fs)
