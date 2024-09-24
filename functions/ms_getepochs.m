@@ -1,5 +1,6 @@
 function [start_time, end_time, epoch_tensor] = ms_getepochs(signal2epoch, timewindow, pk_locs, start_idx, end_idx, fs)
 %function [epoch_tensor, ppt] = ms_getepochs(signal2epoch, timewindow, fs, makeppt)
+% version without visualization
 
 % Function
 % --------
@@ -7,7 +8,7 @@ function [start_time, end_time, epoch_tensor] = ms_getepochs(signal2epoch, timew
 % 
 % Input arguments
 % ---------------
-% signal2epoch (variable)    - signal to epoch, e.g. ecog
+% signal2epoch (variable)        - signal to epoch, e.g. ecog
 % timewindow (1x2 double)       - milliseconds before and after peak, e.g. [-20 200]
 % fs (double)                   - sampling rate of signal to epoch
 % makeppt (logical)             - generates a ppt containing all the epochs if makeppt == 1

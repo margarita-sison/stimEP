@@ -5,9 +5,9 @@ function ms_plotsignals(datadir, ephys, signaltype)
 % 
 % Input arguments
 % ---------------
-% datadir (char or str) - path to folder containing ORdata copies
+% datadir (char or str) - path to folder containing ORdata copies (copies of ephys folders)
 % ephys (char or str)   - ephys code, e.g. "ephys001")
-% signaltype (variable) - signal type to plot, e.g. "ecog" or "emg"
+% signaltype (char or str) - signal type to plot, e.g. "ecog" or "emg"
 % 
 % Output
 % ------
@@ -17,10 +17,10 @@ function ms_plotsignals(datadir, ephys, signaltype)
 cd(strcat(datadir,ephys,"preprocessed")) % set current directory
 [ssep_file, ssep_fileloc, ssep_fileidx] = uigetfile; % prompts user to select SSEP-containing file
 filepath = strcat(ssep_fileloc,ssep_file); 
-load(filepath) % load SSEP file to base workspace
+load(filepath) % load SSEP file into function workspace
 
-%load2base = sprintf('load(''%s'')', filepath);
-%evalin('base', load2base) % does the same as load(filepath)
+load2base = sprintf('load(''%s'')', filepath);
+evalin('base', load2base) % load SSEP file into base workspace
 
 %% Extract signal variable to plot given signal type specified by user
 if signaltype == "ecog"
@@ -49,12 +49,13 @@ for q = 1:quotient
     chan_set_first = chan_set(1); % first channel in the set
     chan_set_last = chan_set(2); % last channel in the set
 
-    %%% preparing fig container 
+    %%% preparing fig container here
     fig(q) = figure; 
 
     tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact','TileIndexing','columnmajor');
-    xlabel(tiles, "Sampling units (a.u.)")       
-    ylabel(tiles, "Amplitude (µV)")
+    ephys = char(ephys);
+    title(tiles,ephys(1:end-1),'FontWeight','bold')
+    xlabel(tiles, "Sampling units (a.u.)"), ylabel(tiles, "Amplitude (µV)")
 
     fig(q).WindowState = 'maximized'; % maximize window
     %%%
@@ -65,7 +66,7 @@ for q = 1:quotient
 
         if signaltype == "emg"
             title(signaltype+"("+s+",:) - "+emg_labels(s))
-        end
+        end % add to this code block to get ecog  & lfp labels from EP struct; in this case, EP struct also needs to be loaded
 
     end
 end
@@ -74,16 +75,17 @@ end
 m = mod(size(signal2plot,1),n_tiles);
 
 if m ~= 0
-    chan_set = [n_tiles-m+1 n_tiles];
-    chan_set_first = chan_set(1);
-    chan_set_last = chan_set(2);
+    chan_set = [n_tiles-m+1 n_tiles]; % set of channels that will be plotted on the current figure
+    chan_set_first = chan_set(1); % first channel in the set
+    chan_set_last = chan_set(2); % last channel in the set
     
-    %%% preparing fig container 
+    %%% preparing fig container  here
     fig(m+1) = figure;
 
     tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact','TileIndexing','columnmajor');
-    xlabel(tiles, "Sampling units (a.u.)")       
-    ylabel(tiles, "Amplitude (µV)")
+    ephys = char(ephys);
+    title(tiles,ephys(1:end-1),'FontWeight','bold')
+    xlabel(tiles, "Sampling units (a.u.)"), ylabel(tiles, "Amplitude (µV)")
     
     fig(m+1).WindowState = 'maximized'; % maximize window
     %%%
@@ -94,8 +96,11 @@ if m ~= 0
 
         if signaltype == "emg"
             title(signaltype+"("+s+",:) - "+emg_labels(s))
-        end
+        end % add to this code block to get ecog  & lfp labels from EP struct; in this case, EP struct also needs to be loaded
         
     end
 end
 end
+
+%% Pending to-do's:
+% add to this code block to get ecog  & lfp labels from EP struct; in this case, EP struct also needs to be loaded
