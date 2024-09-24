@@ -114,3 +114,71 @@ for r = range_start:range_end
     title("ecog = "+r)
     ylim([-300 200])
 end
+% 
+% if makeppt == 1
+%     n_epochs = length(pk_locs);
+% 
+%     n_rows = input(['n epochs = ' num2str(n_epochs) '. n rows = ']);
+%     n_cols = input(['n epochs = ' num2str(n_epochs) '. n columns = ']);
+%     n_tiles = n_rows*n_cols;
+% 
+%     quotient = floor(n_epochs/n_tiles);
+% 
+%     max_yval = max(epoch_tensor,[],"all");
+%     min_yval = min(epoch_tensor,[],"all");
+% 
+%     for c = 1:n_chans
+%         chan = squeeze(epoch_tensor(c,:,:));
+% 
+%         for q = 1:quotient
+% 
+%             epoch_set = [(q-1)*n_tiles+1 q*n_tiles];
+% 
+%             epoch_set_first = epoch_set(1);
+%             epoch_set_last = epoch_set(2);
+% 
+%             fig(q) = figure;
+%             tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact','TileIndexing','columnmajor');
+%             ylabel(tiles, "Amplitude (µV)")
+%             xlabel(tiles, "Time w.r.t. stimulus onset (ms)")
+% 
+%             fig(q).WindowState = 'maximized'; % maximize window
+% 
+%             for e = epoch_set_first:epoch_set_last
+%                 nexttile
+% 
+%                 xaxis_ms = start_time:1/samples_per_ms:end_time;
+% 
+%                 plot(xaxis_ms, chan(e,:))
+% 
+%                 xlim([start_time end_time])
+%                 ylim([min_yval max_yval])
+% 
+%                 title("channel = "+c+", epoch = "+e)
+%             end
+%         end % for q = 1:quotient
+% 
+%     end % c = 1:n_chans
+% 
+%     m = mod(n_epochs, n_tiles);
+%     if m ~= 0
+%         epoch_set = [n_tiles-m+1 n_tiles];
+% 
+%         epoch_set_first = epoch_set(1);
+%         epoch_set_last = epoch_set(2);
+% 
+%         fig(m+1) = figure;
+%         tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact','TileIndexing','columnmajor');
+% 
+%         fig(m+1).WindowState = 'maximized'; % maximize window
+% 
+%         for s = epoch_set_first:epoch_set_last
+%             nexttile
+%             plot(signal2plot(s,:))
+%             if signaltype == "emg"
+%                 title(signaltype+"("+s+",:) - "+emg_labels(s))
+%             else 
+%             end
+%         end
+%     end
+% end

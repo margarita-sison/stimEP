@@ -1,4 +1,9 @@
-function ms_meanepochs(EP_dir, ephys_num, epoch_tensor, start_time, end_time, fs)
+function ms_meanepochs(EP_dir, ephys_num, epoch_tensor, fs, timewindow)
+
+% Function
+% --------
+%
+%
 
 load(EP_dir)
 chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; % customize
