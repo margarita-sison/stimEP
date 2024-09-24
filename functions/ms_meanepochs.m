@@ -1,4 +1,4 @@
-function ms_meanepochs(EP_dir, ephys_num, epoch_tensor, fs, timewindow)
+ %function ms_meanepochs(EP_dir, ephys_num, epoch_tensor, fs, timewindow)
 
 % Function
 % --------
@@ -7,7 +7,13 @@ function ms_meanepochs(EP_dir, ephys_num, epoch_tensor, fs, timewindow)
 
 load(EP_dir)
 chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; % customize
+
+unique(chan_annots)
+ 
 EPs = squeeze(mean(epoch_tensor,2));
+
+start_time = timewindow(1); % start time in ms
+end_time = timewindow(2); % end time in ms
 
 samples_per_ms = fs/1000;
 n_chans = length(chan_annots);
@@ -26,7 +32,7 @@ for s = 1:length(chan_sets)
     chan_set = chan_sets{s};
     
     counter = 0;
-    offset = max(EPs,[],"all")-min(EPs,[],"all");
+    offset = max(EPs,[],"all");
 
     ytick_vals = [];
     ytick_labels = {};
@@ -34,10 +40,11 @@ for s = 1:length(chan_sets)
     for c = chan_set
         chan = EPs(c,:);
         
-        counter = counter+1;
+        
         xaxis_ms = start_time:1/samples_per_ms:end_time;
         
         yvals = chan+offset*counter;
+        counter = counter+1;
         plot(xaxis_ms, yvals)
         ytick_vals = [ytick_vals yvals(1)];
         ytick_labels = [ytick_labels chan_annots{c}];
@@ -48,7 +55,7 @@ for s = 1:length(chan_sets)
     yticks(round(ytick_vals))
     yticklabels(ytick_labels)
 end
-end
+%end
 
 % 6-7
 % 20-21
