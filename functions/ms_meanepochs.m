@@ -2,14 +2,23 @@
 
 % Function
 % --------
-%
-%
+% 
+% 
 
 load(EP_dir)
-chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; % customize
+chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; % make this customizable
 
-unique(chan_annots)
- 
+%% Prepare region-specific colors for plotting
+brain_regions = unique(chan_annots);
+
+colorpalette = {"#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F"};
+
+for i = 1:length(brain_regions)
+    color = colorpalette{i};
+    colors{i} = color;
+end % if more colors are needed, prompt user to seelct more colors
+
+%%
 EPs = squeeze(mean(epoch_tensor,2));
 
 start_time = timewindow(1); % start time in ms
@@ -17,6 +26,7 @@ end_time = timewindow(2); % end time in ms
 
 samples_per_ms = fs/1000;
 n_chans = length(chan_annots);
+
 
 n_rows = 1;
 n_cols = 2;
@@ -45,9 +55,12 @@ for s = 1:length(chan_sets)
         
         yvals = chan+offset*counter;
         counter = counter+1;
-        plot(xaxis_ms, yvals)
+
+        color_idx = find(contains(brain_regions,chan_annots{c}));
+        plot(xaxis_ms, yvals, 'Color', colors{color_idx})
         ytick_vals = [ytick_vals yvals(1)];
         ytick_labels = [ytick_labels chan_annots{c}];
+       
         hold on
     end
     hold off

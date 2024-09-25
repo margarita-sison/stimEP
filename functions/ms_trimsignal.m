@@ -24,4 +24,5 @@ endpt_idcs = [start_idx end_idx];
 
 segment = signal2trim(endpt_idcs(1):endpt_idcs(2)); % use the start & end indices to trim the original signal
 plot(segment) % plot the resulting segment
+
 end
