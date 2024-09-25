@@ -1,4 +1,4 @@
-function epoch_tensor = ms_getepochs(signal2epoch, fs, endpt_idcs, onset_pts, timewindow)
+function epoch_tensor = ms_getepochs(ms_struct, signal2epoch, fs, timewindow)
 
 % Function
 % --------
@@ -7,10 +7,11 @@ function epoch_tensor = ms_getepochs(signal2epoch, fs, endpt_idcs, onset_pts, ti
 % 
 % Input arguments 
 % ---------------
+% ms_struct (struct)            - struct containing:
+%       endpt_idcs (1x2 double) : starting and end indices (xvals) of segment from which onset points were taken (for alignment purposes)
+%       onset_pts (1xn double)  : vector of event onset points, e.g. stimulus artifact peak locations
 % signal2epoch (mxn double)     - signal/s to epoch, e.g. ecog or lfp; m = number of signals (channels), n = sample points
 % fs (double)                   - sampling rate of signal to epoch (samples per second)
-% endpt_idcs (1x2 double)       - starting and end indices (xvals) of segment from which onset points were taken (for alignment purposes)
-% onset_pts (1xn double)        - vector of event onset points, e.g. stimulus artifact peak locations
 % timewindow (1x2 double)       - milliseconds before and after peak, e.g. [-20 200]
 % 
 % Output argument
@@ -26,8 +27,10 @@ pre_onset_len = start_time*samples_per_ms; % length from starting time to event 
 end_time = timewindow(2); % end time in ms
 post_onset_len = end_time*samples_per_ms; % length from event onset to end time, in sampling units
 
+onset_pts = ms_struct.onset_pts;
 epoch_tensor = zeros(n_chans, length(onset_pts), length(pre_onset_len:post_onset_len)); % channels x epochs x samples
 
+endpt_idcs = ms_struct.template_endpts;
 for c = 1:n_chans
     chan = signal2epoch(c,endpt_idcs(1):endpt_idcs(2)); % trim signal with the same start & end indices as segement from 'ms_trimsignal'
     
