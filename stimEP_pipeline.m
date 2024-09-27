@@ -97,25 +97,32 @@ for e = 1:size(eps_demeaned,1)
     eps_poststim(e,:) = ep_poststim;
 end
 
-% update timewindow
+% update timewindow in struct
 MS_STRUCT.timewindow = poststim_period;
+MS_STRUCT.eps_poststim = eps_poststim;
 ms_struct = MS_STRUCT;
 %%
-peaks_all = cell(size(eps_poststim,1),1);
-pk_locs_all = cell(size(eps_poststim,1),1);
-pk_widths_all = cell(size(eps_poststim,1),1);
-pk_proms_all = cell(size(eps_poststim,1),1);
+averaged_EPs = ms_averageEPs(ep_dir, ms_struct);
+
+peaks_all = cell(size(averaged_EPs,1),1);
+pk_locs_all = cell(size(averaged_EPs,1),1);
+pk_widths_all = cell(size(averaged_EPs,1),1);
+pk_proms_all = cell(size(averaged_EPs,1),1);
 
 % display label
-for e = 1:size(eps_poststim,1)
-    ep_poststim = eps_poststim(e,:);
-    [peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(ep_poststim);
+for a = 1:size(averaged_EPs,1)
+    averaged_EP = averaged_EPs(a,:);
+    [peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(averaged_EP);
 
-    peaks_all(e) = {peaks};
-    pk_locs_all(e) = {pk_locs};
-    pk_widths_all(e) = {pk_widths};
-    pk_proms_all(e) = {pk_proms};
+    peaks_all(a) = {peaks};
+    pk_locs_all(a) = {pk_locs};
+    pk_widths_all(a) = {pk_widths};
+    pk_proms_all(a) = {pk_proms};
 end
+
+MS_STRUCT.peaks_all = peaks_all;
+ms_struct = MS_STRUCT;
+
 
 % eps2detrend = eps_demeaned;
 % eps_detrended = ms_detrend(eps2detrend);

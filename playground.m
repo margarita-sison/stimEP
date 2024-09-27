@@ -182,3 +182,78 @@ end
 %         end
 %     end
 % end
+function ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
+
+% Function
+% --------
+% 
+% 
+
+%% Extract channel labels (annotations) from 'EP' struct
+load(ep_dir) % where we get the channel labels (annotations)
+
+ephys_num = str2double(ms_struct.ephys(6:end));
+
+if montage == "monopolar"
+    chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; 
+elseif montage == "bipolar"
+    chan_annots = EP(ephys_num).channelLocsSimpleBipolar;
+end
+
+%% Prepare region-specific colors for plotting
+rois = unique(chan_annots); % roi/s = region/s of interest
+
+colorpalette = {"#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
+    "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
+    "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F"};
+roi_colors = {}; 
+
+for r = 1:length(rois)
+    roi_color = colorpalette{r};
+    roi_colors{r} = roi_color;
+end
+
+%% Prepare variables for plotting
+% Prepare x-axis values in ms
+start_time = ms_struct.timewindow(1); % start time in ms
+end_time = ms_struct.timewindow(2); % end time in ms
+
+samples_per_ms = ms_struct.fs/1000; % sampling rate in ms
+
+xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
+
+% Prepare figure container
+
+n_chans = length(rois);
+
+n_rows = n_chans;
+n_cols = 1;
+ 
+tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact');
+
+%fig = figure;
+%fig.WindowState = 'maximized';
+
+%% Plot the EPs
+
+
+counter = 0; % used together with 'offset'
+offset = max(eps2plot,[],"all"); % to plot signals on top of each other in 1 tile
+
+ytick_vals = [];
+ytick_labels = {};
+
+for c = 1:n_chans
+    nexttile
+    chan = eps2plot(c,:);
+
+    plot(xaxis_ms, chan, 'Color', roi_colors{c})
+   
+    xline
+    hold on
+end
+hold off
+
+xlim([start_time end_time])
+
+end

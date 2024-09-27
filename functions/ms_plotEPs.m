@@ -39,6 +39,7 @@ samples_per_ms = ms_struct.fs/1000; % sampling rate in ms
 xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
 
 % Prepare figure container
+
 n_chans = length(chan_annots);
 
 n_rows = 1;
@@ -53,6 +54,7 @@ fig.WindowState = 'maximized';
 %% Plot the EPs
 % Split channels into 2 sets, 1 for each of the 2 columns of the figure
 chan_sets = {1:n_chans/2 n_chans/2+1:n_chans};
+
 for s = 1:length(chan_sets)
     nexttile
     chan_set = chan_sets{s};
@@ -68,14 +70,14 @@ for s = 1:length(chan_sets)
         
         yvals = chan+offset*counter; % to plot signals on top of each other in 1 tile
         counter = counter+1;
-
+      
         color_idx = find(contains(rois,chan_annots{c}));
 
         plot(xaxis_ms, yvals, 'Color', roi_colors{color_idx})
 
         ytick_vals = [ytick_vals yvals(1)];
         ytick_labels = [ytick_labels chan_annots{c}];
-       
+     
         hold on
     end
     hold off
