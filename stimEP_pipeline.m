@@ -78,6 +78,45 @@ eps2plot = eps_demeaned;
 ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
 
 %%
+
+% Prepare x-axis values in ms
+poststim_period = [5 100];
+start_time = ms_struct.timewindow(1); % start time in ms
+end_time = ms_struct.timewindow(2); % end time in ms
+
+samples_per_ms = ms_struct.fs/1000; % sampling rate in ms
+
+xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
+
+poststim_start_idx = find(xaxis_ms == poststim_period(1));
+poststim_end_idx = find(xaxis_ms == poststim_period(2));
+
+for e = 1:size(eps_demeaned,1)
+    ep_demeaned = eps_demeaned(e,:);
+    ep_poststim = ep_demeaned(poststim_start_idx:poststim_end_idx);
+    eps_poststim(e,:) = ep_poststim;
+end
+
+% update timewindow
+MS_STRUCT.timewindow = poststim_period;
+ms_struct = MS_STRUCT;
+%%
+peaks_all = cell(size(eps_poststim,1),1);
+pk_locs_all = cell(size(eps_poststim,1),1);
+pk_widths_all = cell(size(eps_poststim,1),1);
+pk_proms_all = cell(size(eps_poststim,1),1);
+
+% display label
+for e = 1:size(eps_poststim,1)
+    ep_poststim = eps_poststim(e,:);
+    [peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(ep_poststim);
+
+    peaks_all(e) = {peaks};
+    pk_locs_all(e) = {pk_locs};
+    pk_widths_all(e) = {pk_widths};
+    pk_proms_all(e) = {pk_proms};
+end
+
 % eps2detrend = eps_demeaned;
 % eps_detrended = ms_detrend(eps2detrend);
 
