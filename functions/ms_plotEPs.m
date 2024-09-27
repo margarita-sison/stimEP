@@ -1,4 +1,4 @@
-function evoked_potentials = ms_meanepochs(ep_dir, ms_struct)
+function ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
 
 % Function
 % --------
@@ -9,21 +9,25 @@ function evoked_potentials = ms_meanepochs(ep_dir, ms_struct)
 load(ep_dir) % where we get the channel labels (annotations)
 
 ephys_num = str2double(ms_struct.ephys(6:end));
-chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; % make this customizable
+
+if montage == "monopolar"
+    chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; 
+elseif montage == "bipolar"
+    chan_annots = EP(ephys_num).channelLocsSimpleBipolar;
+end
 
 %% Prepare region-specific colors for plotting
 rois = unique(chan_annots); % roi/s = region/s of interest
 
-colorpalette = {"#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F"};
+colorpalette = {"#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
+    "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
+    "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F"};
 roi_colors = {}; 
 
 for r = 1:length(rois)
     roi_color = colorpalette{r};
     roi_colors{r} = roi_color;
-end % if more colors are needed, prompt user to seelct more colors
-
-%% Get the evoked potentials
-evoked_potentials = squeeze(mean(ms_struct.epoch_tensor,2)); % average all the epochs (2nd dim of epoch_tensor)
+end
 
 %% Prepare variables for plotting
 % Prepare x-axis values in ms
@@ -54,13 +58,13 @@ for s = 1:length(chan_sets)
     chan_set = chan_sets{s};
     
     counter = 0; % used together with 'offset'
-    offset = max(evoked_potentials,[],"all"); % to plot signals on top of each other in 1 tile
+    offset = max(eps2plot,[],"all"); % to plot signals on top of each other in 1 tile
 
     ytick_vals = [];
     ytick_labels = {};
 
     for c = chan_set
-        chan = evoked_potentials(c,:);
+        chan = eps2plot(c,:);
         
         yvals = chan+offset*counter; % to plot signals on top of each other in 1 tile
         counter = counter+1;
@@ -75,9 +79,9 @@ for s = 1:length(chan_sets)
         hold on
     end
     hold off
-
+ 
     xlim([start_time end_time])
-    ylim([min(evoked_potentials(chan_set(1),:)) offset*counter])
+    ylim([min(eps2plot(chan_set(1),:)) offset*counter])
     yticks(round(ytick_vals))
     yticklabels(ytick_labels)
 end
