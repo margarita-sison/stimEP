@@ -12,7 +12,7 @@ function epoch_tensor = ms_getepochs(ms_struct, signal2epoch, fs, timewindow)
 %       onset_pts (1xn double)  : vector of event onset points, e.g. stimulus artifact peak locations
 % signal2epoch (mxn double)     - signal/s to epoch, e.g. ecog or lfp; m = number of signals (channels), n = sample points
 % fs (double)                   - sampling rate of signal to epoch (samples per second)
-% timewindow (1x2 double)       - milliseconds before and after peak, e.g. [-20 200]
+% timewindow (1x2 double)       - milliseconds before and after stimulus onset, e.g. [-20 200]
 % 
 % Output argument
 % ---------------

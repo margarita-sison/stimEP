@@ -257,3 +257,26 @@ hold off
 xlim([start_time end_time])
 
 end
+
+% Prepare x-axis values in ms
+poststim_period = [5 100];
+start_time = ms_struct.timewindow(1); % start time in ms
+end_time = ms_struct.timewindow(2); % end time in ms
+
+samples_per_ms = ms_struct.fs/1000; % sampling rate in ms
+
+xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
+
+poststim_start_idx = find(xaxis_ms == poststim_period(1));
+poststim_end_idx = find(xaxis_ms == poststim_period(2));
+
+for e = 1:size(eps_demeaned,1)
+    ep_demeaned = eps_demeaned(e,:);
+    ep_poststim = ep_demeaned(poststim_start_idx:poststim_end_idx);
+    eps_poststim(e,:) = ep_poststim;
+end
+
+% update timewindow in struct
+MS_STRUCT.timewindow = poststim_period;
+MS_STRUCT.eps_poststim = eps_poststim;
+ms_struct = MS_STRUCT;

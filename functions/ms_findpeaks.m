@@ -42,6 +42,6 @@ while user_ans == "Y"
     user_ans = input('Adjust threshold? Y/N: ',"s");
 end
 
-%% Call 'findpeaks' with minimum peak prominence specified, save output arguments
+%% Call 'findpeaks' with minimum peak prominence specified
 [peaks, pk_locs, pk_widths, pk_proms] = findpeaks(segment,'MinPeakProminence',min_prom);
 end

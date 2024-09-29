@@ -1,13 +1,13 @@
 function ms_plotsignals(datadir, ephys, signaltype)
 % Function
 % --------
-% Plots all signals of a signal type for visual inspection
+% Plots all signals of a signal type (e.g., ECoG, EMG, LFP) for visual inspection
 % 
 % Input arguments
 % ---------------
-% datadir (char or str) - path to folder containing ORdata copies (copies of ephys folders)
-% ephys (char or str)   - ephys code, e.g. "ephys001")
-% signaltype (char or str) - signal type to plot, e.g. "ecog" or "emg"
+% datadir (char or str)     - path to folder containing ORdata copies (copies of ephys folders)
+% ephys (char or str)       - ephys code, e.g. "ephys001"
+% signaltype (char or str)  - signal type to plot, e.g. "ecog", "emg", "lfp"
 % 
 % Output
 % ------
@@ -66,7 +66,7 @@ for q = 1:quotient
 
         if signaltype == "emg"
             title(signaltype+"("+s+",:) - "+emg_labels(s))
-        end % add to this code block to get ecog  & lfp labels from EP struct; in this case, EP struct also needs to be loaded
+        end % add ecog and lfp labels from EP struct
 
     end
 end
@@ -96,11 +96,11 @@ if m ~= 0
 
         if signaltype == "emg"
             title(signaltype+"("+s+",:) - "+emg_labels(s))
-        end % add to this code block to get ecog  & lfp labels from EP struct; in this case, EP struct also needs to be loaded
+        end % add ecog and lfp labels from EP struct
         
     end
 end
 end
 
 %% Pending to-do's:
-% add to this code block to get ecog  & lfp labels from EP struct; in this case, EP struct also needs to be loaded
+% % add ecog and lfp labels from EP struct
