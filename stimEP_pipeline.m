@@ -15,16 +15,16 @@
 % Add path to functions directory + "/" if Mac or "\" if Windows (functions
 % directory = functions folder containing all the functions used in this
 % pipeline)
-%addpath("C:\Users\Miocinovic_lab\Documents\mssison\GitHub\stimEP\functions\") 
-addpath("/Users/margaritasison/GitHub/stimEP/functions/") 
+addpath("C:\Users\Miocinovic_lab\Documents\mssison\GitHub\stimEP\functions\") 
+%addpath("/Users/margaritasison/GitHub/stimEP/functions/") 
 
 % Add path to directory containing ephys files + "/" if Mac or "\" if Windows 
-%datadir = "C:\Users\Miocinovic_lab\Documents\mssison\ORdata_copies_MS\"; 
-datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/"; 
+datadir = "C:\Users\Miocinovic_lab\Documents\mssison\ORdata_copies_MS\"; 
+%datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/"; 
 
 % Specify ephys code + "/" if Mac or "\" if Windows 
-%ephys = "ephys015\"; 
-ephys = "ephys015/"; 
+ephys = "ephys015\"; 
+%ephys = "ephys015/"; 
 
 signaltype = "emg"; % specify as char or string
 
@@ -52,10 +52,14 @@ MS_STRUCT.onset_pts = pk_locs; % peaks = proxy for stimulus onset points
 MS_STRUCT.peak_widths = pk_widths;
 MS_STRUCT.peak_proms = pk_proms;
 
+%% Re-reference ECoG signals in a bipolar montage using adjacent contacts
+ecog_bipolar = ms_bipolarchans(ecog);
+
 %% 4 - Align stimulus artifact peaks in template EMG signal with ECOG and/or LFP signals
 %% % 5 - Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
 ms_struct = MS_STRUCT;
-signal2epoch = ecog;
+%signal2epoch = ecog;
+signal2epoch = ecog_bipolar;
 fs = sampling_rate_ecog; 
 timewindow = [-20 100]; % specify a time window in ms (w.r.t. stimulus onset)
 
@@ -70,9 +74,11 @@ ms_struct = MS_STRUCT;
 evoked_potentials = squeeze(mean(ms_struct.epoch_tensor,2)); % average all the epochs per channel (2nd dimension of epoch_tensor)
 MS_STRUCT.evoked_potentials = evoked_potentials;
 
+%%%
+chanLocs_overview = ms_chanLocs_overview(ep_dir);
 %%% run this block to plot signals for a visual check
-%ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
-ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
+ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
+%ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
 montage = "monopolar";
 ms_struct = MS_STRUCT;
 eps2plot = evoked_potentials;

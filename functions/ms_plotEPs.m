@@ -62,11 +62,11 @@ xlabel(tiles, "Time w.r.t. stimulus onset (ms)")
 fig.Position([3 4]) = [560*1.5 420*2]; % adjust fig width & height
 %% Plot the EPs
 % Split channels into 2 sets, 1 for each of the 2 columns of the figure
-chan_sets = {1:n_chans/2 n_chans/2+1:n_chans};
+chan_subsets = {1:n_chans/2 n_chans/2+1:n_chans};
 
-for s = 1:length(chan_sets)
+for s = 1:length(chan_subsets)
     nexttile
-    chan_set = chan_sets{s};
+    chan_subset = chan_subsets{s};
     
     counter = 0; % used together with vertical 'offset'
     offset = max(eps2plot,[],"all"); % to plot signals on top of each other in 1 tile
@@ -74,7 +74,7 @@ for s = 1:length(chan_sets)
     ytick_vals = [];
     ytick_labels = {};
 
-    for c = chan_set  
+    for c = chan_subset  
         yvals = eps2plot(c,:)+offset*counter; % to plot signals on top of each other in 1 tile
         counter = counter+1;
       
@@ -89,7 +89,7 @@ for s = 1:length(chan_sets)
     hold off
  
     xlim([start_time end_time])
-    ylim([min(eps2plot(chan_set(1),:)) offset*counter])
+    ylim([min(eps2plot(chan_subset(1),:)) offset*counter])
     yticks(round(ytick_vals))
     yticklabels(ytick_labels)
 end
