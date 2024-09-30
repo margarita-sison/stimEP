@@ -9,6 +9,8 @@
 % 8 - Detrend evoked potentials if necessary
 % 9 - Average evoked potentials from the same brain region (e.g, primary motor cortex)
 % 10 - Extract post-stimuulus peaks from evoked potentials
+% 11 - Plot average evoked potentials by brain region
+
 %% 1 - Visually inspect EMG signals before selecting a template EMG signal
 % Add path to functions directory + "/" if Mac or "\" if Windows (functions
 % directory = functions folder containing all the functions used in this
@@ -55,7 +57,7 @@ MS_STRUCT.peak_proms = pk_proms;
 ms_struct = MS_STRUCT;
 signal2epoch = ecog;
 fs = sampling_rate_ecog; 
-timewindow = [-20 200]; % specify a time window in ms (w.r.t. stimulus onset)
+timewindow = [-20 100]; % specify a time window in ms (w.r.t. stimulus onset)
 
 epoch_tensor = ms_getepochs(ms_struct, signal2epoch, fs, timewindow);
 
@@ -80,7 +82,7 @@ ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
 
 %% 7 - Apply a baseline correction to the evoked potentials
 ms_struct = MS_STRUCT;
-baselineperiod = [5 200]; 
+baselineperiod = [5 100]; 
 
 eps_demeaned = ms_baselinecorrect(ms_struct, baselineperiod);
 MS_STRUCT.eps_demeaned = eps_demeaned;
@@ -156,12 +158,11 @@ end
 MS_STRUCT.poststim_peaks_all = poststim_peaks_all;
 MS_STRUCT.poststim_pkwidths_all = poststim_pkwidths_all;
 MS_STRUCT.poststim_pkproms_all = poststim_pkproms_all;
+
+%% 11 - Plot average evoked potentials by brain region
 ms_struct = MS_STRUCT;
-
-%%
-
-
+roi_order = [3 2 1 4];
+ms_plotEPs_by_roi(ms_struct, roi_order)
 
 %% Pending to-do's
-% Visualizing epochs and discarding artifact-laden epochs
- 
+% Visualize epochs and discard artifact-laden epochs

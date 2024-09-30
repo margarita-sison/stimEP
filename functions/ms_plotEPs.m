@@ -53,11 +53,13 @@ n_chans = length(chan_annots);
 n_rows = 1;
 n_cols = 2;
 
-tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact');
-
 fig = figure;
-fig.WindowState = 'maximized';
 
+tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact');
+title(tiles,ms_struct.ephys,'FontWeight','bold')
+xlabel(tiles, "Time w.r.t. stimulus onset (ms)")
+
+fig.Position([3 4]) = [560*1.5 420*2]; % adjust fig width & height
 %% Plot the EPs
 % Split channels into 2 sets, 1 for each of the 2 columns of the figure
 chan_sets = {1:n_chans/2 n_chans/2+1:n_chans};
