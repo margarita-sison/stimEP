@@ -28,17 +28,16 @@ else
 end
 
 %% Prepare region-specific colors for plotting
-rois = unique(chan_annots); % roi/s = region/s of interest
-
-colorpalette = {"#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
-    "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
-    "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F"};
-roi_colors = {}; 
-
-for r = 1:length(rois)
-    roi_color = colorpalette{r};
-    roi_colors{r} = roi_color;
-end
+% rois = unique(chan_annots); % roi/s = region/s of interest
+% colorpalette = {'#0072BD' '#D95319'	'#EDB120' '#7E2F8E' '#77AC30' '#4DBEEE' '#A2142F' ...
+%     '#0072BD' '#D95319'	'#EDB120' '#7E2F8E' '#77AC30' '#4DBEEE' '#A2142F' ...
+%     '#0072BD' '#D95319'	'#EDB120' '#7E2F8E' '#77AC30' '#4DBEEE' '#A2142F'};
+% roi_colors = {}; 
+% 
+% for r = 1:length(rois)
+%     roi_color = colorpalette{r};
+%     roi_colors{r} = roi_color;
+% end
 
 %% Prepare x-axis values in ms
 start_time = ms_struct.timewindow(1); % start time in ms
@@ -78,10 +77,10 @@ for s = 1:length(chan_subsets)
         yvals = eps2plot(c,:)+offset*counter; % to plot signals on top of each other in 1 tile
         counter = counter+1;
       
-        color_idx = find(contains(rois,chan_annots{c}));
-        plot(xaxis_ms, yvals, 'Color', roi_colors{color_idx})
-
-        ytick_vals = [ytick_vals yvals(1)];
+        %color_idx = find(contains(rois,chan_annots{c}));
+        %plot(xaxis_ms, yvals, 'Color', roi_colors{contains(rois,chan_annots{c})});
+        plot(xaxis_ms, yvals);
+        %ytick_vals = [ytick_vals yvals(1)];
         ytick_labels = [ytick_labels chan_annots{c}];
      
         hold on
@@ -90,7 +89,7 @@ for s = 1:length(chan_subsets)
  
     xlim([start_time end_time])
     ylim([min(eps2plot(chan_subset(1),:)) offset*counter])
-    yticks(round(ytick_vals))
+    %yticks(round(ytick_vals))
     yticklabels(ytick_labels)
 end
 end

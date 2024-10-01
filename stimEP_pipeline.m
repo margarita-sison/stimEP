@@ -60,8 +60,8 @@ MS_STRUCT.ecog_bipolar = ecog_bipolar;
 %% % 5 - Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
 ms_struct = MS_STRUCT;
 %signal2epoch = ecog;
-signal2epoch = ecog_bipolar;
-fs = sampling_rate_ecog; 
+signal2epoch = lfp;
+fs = sampling_rate_lfp; 
 timewindow = [-20 100]; % specify a time window in ms (w.r.t. stimulus onset)
 
 epoch_tensor = ms_getepochs(ms_struct, signal2epoch, fs, timewindow);
@@ -69,21 +69,20 @@ epoch_tensor = ms_getepochs(ms_struct, signal2epoch, fs, timewindow);
 MS_STRUCT.fs = fs;
 MS_STRUCT.timewindow = timewindow;
 MS_STRUCT.epoch_tensor = epoch_tensor;
-ms_struct = MS_STRUCT;
+
 
 %% 6 - Average epochs to generate evoked potentials
 evoked_potentials = squeeze(mean(ms_struct.epoch_tensor,2)); % average all the epochs per channel (2nd dimension of epoch_tensor)
 MS_STRUCT.evoked_potentials = evoked_potentials;
-
+ms_struct = MS_STRUCT;
 %%% for ecog channels
-chanLocs_overview = ms_chanLocs_overview(ep_dir);
-%%% run this block to plot signals for a visual check
 ep_dir = "C:\Users\Miocinovic_lab\OneDrive - Emory\1st Rotation - Miocinovic Lab\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 %ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
-chanlabels = "channelLocsSimpleBipolar";
+chanLocs_overview = ms_chanLocs_overview(ep_dir, ms_struct);
+%%% run this block to plot signals for a visual check
+chanlabels = lfp_configuration;
 ms_struct = MS_STRUCT;
 eps2plot = evoked_potentials;
-
 ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
 %%%
 
