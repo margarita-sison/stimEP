@@ -23,7 +23,7 @@ datadir = "C:\Users\Miocinovic_lab\OneDrive - Emory\1st Rotation - Miocinovic La
 %datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/"; 
 
 % Specify ephys code + "/" if Mac or "\" if Windows 
-ephys = "ephys018\"; 
+ephys = "ephys007\"; 
 %ephys = "ephys015/"; 
 
 signaltype = "emg"; % specify as char or string
