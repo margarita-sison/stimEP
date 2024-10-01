@@ -1,4 +1,4 @@
-function [EPs_by_roi, rois] = ms_EPs_by_roi(ep_dir, montage, ms_struct, eps2average)
+function [EPs_by_roi, rois] = ms_EPs_by_roi(ep_dir, chanlabels, ms_struct, eps2average)
 
 % Function
 % --------
@@ -7,7 +7,7 @@ function [EPs_by_roi, rois] = ms_EPs_by_roi(ep_dir, montage, ms_struct, eps2aver
 % Input arguments
 % ---------------
 % ep_dir (char or string)   - path to 'EP' struct containing channel locations
-% montage (char or string)  - specify if monopolar or bipolar
+% chanlabels (char, string, or cell array)  - if plotting ecog, chanlabels = field name in EP struct (char or string); if plotting lfp, chanlabels = cell array containing lfp labels
 % ms_struct (struct)        - struct containing:
 %       ephys (char)        : ephys code, e.g. 'ephys001'
 % eps2average (mxn double)  - matrix of evoked potentials, e.g. from ecog or lfp; m = number of signals (channels), n = sample points
@@ -20,10 +20,10 @@ function [EPs_by_roi, rois] = ms_EPs_by_roi(ep_dir, montage, ms_struct, eps2aver
 load(ep_dir) 
 ephys_num = str2double(ms_struct.ephys(6:end));
 
-if montage == "monopolar"
-    chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; 
-elseif montage == "bipolar"
-    chan_annots = EP(ephys_num).channelLocsSimpleBipolar;
+if ischar(chanlabels) || isstring(chanlabels)
+    chan_annots = getfield(EP(ephys_num), chanlabels);
+else 
+    chan_annots = chanlabels;
 end
 
 %% Average evoked potentials from the same brain region
