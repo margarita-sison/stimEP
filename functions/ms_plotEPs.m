@@ -1,17 +1,17 @@
-function ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
+function ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
 % Function
 % --------
 % Plots evoked potentials on the same axes with a vertical offset
 % 
 % Input arguments
 % ---------------
-% ep_dir (char or string)       - path to 'EP' struct containing channel locations
-% montage (char or string)      - specify if monopolar or bipolar
-% ms_struct (struct)            - struct containing:
-%       ephys (char)            : ephys code, e.g. 'ephys001'
-%       timewindow (1x2 double) : milliseconds before and after stimulus onset, e.g. [-20 200]
-%       fs (double)             : sampling rate of signals (samples per second)
-% eps2plot (mxn double)         - matrix of evoked potentials, e.g. from ecog or lfp; m = number of signals (channels), n = sample points
+% ep_dir (char or string)                   - path to 'EP' struct containing channel locations
+% chanlabels (char, string, or cell array)  - if plotting ecog, chanlabels = field name in EP struct (char or string); if plotting lfp, chanlabels = cell array containing lfp labels
+% ms_struct (struct)                        - struct containing:
+%       ephys (char)                        : ephys code, e.g. 'ephys001'
+%       timewindow (1x2 double)             : milliseconds before and after stimulus onset, e.g. [-20 200]
+%       fs (double)                         : sampling rate of signals (samples per second)
+% eps2plot (mxn double)                     - matrix of evoked potentials, e.g. from ecog or lfp; m = number of signals (channels), n = sample points
 %
 % Output
 % ------
@@ -21,10 +21,10 @@ function ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
 load(ep_dir) 
 ephys_num = str2double(ms_struct.ephys(6:end));
 
-if montage == "monopolar"
-    chan_annots = EP(ephys_num).channelLocsSimpleMonopolar; 
-elseif montage == "bipolar"
-    chan_annots = EP(ephys_num).channelLocsSimpleBipolar;
+if ischar(chanlabels) || isstring(chanlabels)
+    chan_annots = getfield(EP(ephys_num), chanlabels);
+else 
+    chan_annots = chanlabels;
 end
 
 %% Prepare region-specific colors for plotting

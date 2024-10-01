@@ -23,7 +23,7 @@ datadir = "C:\Users\Miocinovic_lab\Documents\mssison\ORdata_copies_MS\";
 %datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/"; 
 
 % Specify ephys code + "/" if Mac or "\" if Windows 
-ephys = "ephys015\"; 
+ephys = "ephys007\"; 
 %ephys = "ephys015/"; 
 
 signaltype = "emg"; % specify as char or string
@@ -55,6 +55,7 @@ MS_STRUCT.peak_proms = pk_proms;
 %% Re-reference ECoG signals in a bipolar montage using adjacent contacts
 ecog_bipolar = ms_bipolarchans(ecog);
 
+MS_STRUCT.ecog_bipolar = ecog_bipolar;
 %% 4 - Align stimulus artifact peaks in template EMG signal with ECOG and/or LFP signals
 %% % 5 - Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
 ms_struct = MS_STRUCT;
@@ -74,16 +75,16 @@ ms_struct = MS_STRUCT;
 evoked_potentials = squeeze(mean(ms_struct.epoch_tensor,2)); % average all the epochs per channel (2nd dimension of epoch_tensor)
 MS_STRUCT.evoked_potentials = evoked_potentials;
 
-%%%
+%%% for ecog channels
 chanLocs_overview = ms_chanLocs_overview(ep_dir);
 %%% run this block to plot signals for a visual check
 ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 %ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
-montage = "monopolar";
+chanlabels = "channelLocsSimpleBipolar";
 ms_struct = MS_STRUCT;
 eps2plot = evoked_potentials;
 
-ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
+ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
 %%%
 
 %% 7 - Apply a baseline correction to the evoked potentials
@@ -96,11 +97,11 @@ MS_STRUCT.eps_demeaned = eps_demeaned;
 %%% run this block to plot signals for a visual check
 %ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
-montage = "monopolar";
+chanlabels = "channelLocsSimpleBipolar";
 ms_struct = MS_STRUCT;
 eps2plot = eps_demeaned;
 
-ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
+ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
 %%%
 
 %% 8 - Detrend evoked potentials if necessary
@@ -116,21 +117,21 @@ MS_STRUCT.eps_detrended = eps_detrended;
 %%% run this block to plot signals for a visual check
 %ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
-montage = "monopolar";
+chanlabels = "channelLocsSimpleBipolar";
 ms_struct = MS_STRUCT;
 eps2plot = eps_detrended;
 
-ms_plotEPs(ep_dir, montage, ms_struct, eps2plot)
+ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
 %%%
 
 %% 9 - Average evoked potentials from the same region (e.g, primary motor cortex)
 %ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
-montage = "monopolar";
+chanlabels = "channelLocsSimpleBipolar";
 ms_struct = MS_STRUCT;
 eps2average = eps_demeaned;
 
-[EPs_by_roi, rois] = ms_EPs_by_roi(ep_dir, montage, ms_struct, eps2average);
+[EPs_by_roi, rois] = ms_EPs_by_roi(ep_dir, chanlabels, ms_struct, eps2average);
 MS_STRUCT.EPs_by_roi = EPs_by_roi;
 MS_STRUCT.rois = rois;
 ms_struct = MS_STRUCT;
