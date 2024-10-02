@@ -1,4 +1,4 @@
-function eps_demeaned = ms_baselinecorrect(ms_struct, baselineperiod)
+function eps_demeaned = ms_baselinecorrect(MS_STRUCT, baselineperiod)
 % Function
 % --------
 % Subtracts the mean of a specified baseline period from every point in the
@@ -16,14 +16,14 @@ function eps_demeaned = ms_baselinecorrect(ms_struct, baselineperiod)
 % ---------------
 % eps_demeaned (mxn double)             - baseline-corrected evoked potentials  
 
-evoked_potentials = ms_struct.evoked_potentials; 
+evoked_potentials = MS_STRUCT.evoked_potentials; 
 eps_demeaned = zeros(size(evoked_potentials,1), size(evoked_potentials,2)); % empty container for baseline-corrected EPs
 
 % Prepare x-axis values in ms
-start_time = ms_struct.timewindow(1); % start time of EPs in ms
-end_time = ms_struct.timewindow(2); % end time of EPs in ms
+start_time = MS_STRUCT.timewindow(1); % start time of EPs in ms
+end_time = MS_STRUCT.timewindow(2); % end time of EPs in ms
 
-samples_per_ms = ms_struct.fs/1000; % sampling rate in ms
+samples_per_ms = MS_STRUCT.fs/1000; % sampling rate in ms
 
 xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
 %%%
@@ -40,4 +40,6 @@ for e = 1:size(evoked_potentials,1)
     ep_demeaned = evoked_potential-baseline_mean; % subtract mean of baseline period from time series
     eps_demeaned(e,:) = ep_demeaned;
 end
+MS_STRUCT.eps_demeaned = eps_demeaned;
+evalin('base',MS_STRUCT)
 end

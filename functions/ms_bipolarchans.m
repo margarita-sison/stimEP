@@ -1,4 +1,4 @@
-function ecog_bipolar = ms_bipolarchans(ecog)
+function ecog_bipolar = ms_bipolarchans(MS_STRUCT, ecog)
 
 n_chans = size(ecog,1);
 chan_subsets = {1:n_chans/2 n_chans/2+1:n_chans}; % split channels into 2 equal sets
@@ -15,5 +15,7 @@ for s = 1:length(chan_subsets)
     ecog_bipolar(chan_subset_bipolar,:) = ecog_subset_bipolar;
 end
 
+MS_STRUCT.ecog_bipolar = ecog_bipolar;
+evalin('base', MS_STRUCT)
 end
       

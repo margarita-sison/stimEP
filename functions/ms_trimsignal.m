@@ -1,4 +1,4 @@
-function [segment, endpt_idcs] = ms_trimsignal(signal2trim)
+function [segment, endpt_idcs] = ms_trimsignal(MS_STRUCT, signal2trim)
 % Function
 % --------
 % Trims a signal and saves the resulting segment and its endpoints
@@ -25,4 +25,8 @@ endpt_idcs = [start_idx end_idx];
 segment = signal2trim(endpt_idcs(1):endpt_idcs(2)); % use the start & end indices to trim the original signal
 plot(segment) % plot the resulting segment
 
+% Save info that will be useful later on in a struct
+MS_STRUCT.template_segment = segment;
+MS_STRUCT.template_endpts = endpt_idcs;
+evalin('base',MS_STRUCT)
 end

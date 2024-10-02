@@ -1,129 +1,69 @@
-%% What you can do with this pipeline:
-% 1 - Visually inspect EMG signals before selecting a template EMG signal
-% 2 - Trim the template EMG signal before extracting stimulus artifact peaks
-% 3 - Extract stimulus artifact peaks from template EMG signal
-% 4 - Align stimulus artifact peaks in template EMG signal with ECOG and/or LFP signals
-% 5 - Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
-% 6 - Average epochs to generate evoked potentials
-% 7 - Apply a baseline correction to the evoked potentials
-% 8 - Detrend evoked potentials if necessary
-% 9 - Average evoked potentials from the same brain region (e.g, primary motor cortex)
-% 10 - Extract post-stimuulus peaks from evoked potentials
-% 11 - Plot average evoked potentials by brain region
+%% Visually inspect EMG signals before selecting a template EMG signal
+% Add path to folder containing all the functions used here
+fxndir = uigetdir(cd, 'Select Functions Folder'); 
+addpath(append(fxndir,'/'))
 
-%% 1 - Visually inspect EMG signals before selecting a template EMG signal
-% Add path to functions directory + "/" if Mac or "\" if Windows (functions
-% directory = functions folder containing all the functions used in this
-% pipeline)
-addpath("C:\Users\Miocinovic_lab\OneDrive - Emory\GitHub\stimEP\functions\") 
-%addpath("/Users/margaritasison/GitHub/stimEP/functions/") 
+% Add path to folder containing all the ephys files 
+datadir = uigetdir(cd, 'Select OR Data Folder');
+datadir = append(datadir,'/');
 
-% Add path to directory containing ephys files + "/" if Mac or "\" if Windows 
-datadir = "C:\Users\Miocinovic_lab\OneDrive - Emory\1st Rotation - Miocinovic Lab\ORdata_copies_MS\"; 
-%datadir = "/Users/margaritasison/Downloads/ORdata_copes_MS/"; 
+% Specify ephys code 
+ephys = input('Specify ephys code, e.g. ephys001: ','s');
+ephys = append(ephys,'/'); 
 
-% Specify ephys code + "/" if Mac or "\" if Windows 
-ephys = "ephys018\"; 
-%ephys = "ephys015/"; 
-
-signaltype = "emg"; % specify as char or string
+% Specify signal type to plot
+signaltype = input('Specify signal type to plot: ','s');
 
 ms_plotsignals(datadir, ephys, signaltype)
 
-% Save info that will be useful later on in a struct
-MS_STRUCT = struct;
-ephys = char(ephys);
-MS_STRUCT.ephys = ephys(1:end-1);
+%% Trim the template EMG signal before extracting stimulus artifact peaks
+% After visually inspecting the signal, you may want to only use a part of it
+signal2trim = input('Specify signal to trim, e.g. emg(1,:): ');
+[segment, endpt_idcs] = ms_trimsignal(MS_STRUCT, signal2trim);
 
-%% 2 - Trim the template EMG signal before extracting stimulus artifact peaks
-% After visually inspecting the signal, you may want to only use a part of
-% it
-signal2trim = emg(3,:); % emg(3,:) = R FCR
-[segment, endpt_idcs] = ms_trimsignal(signal2trim);
-
-MS_STRUCT.template_segment = segment;
-MS_STRUCT.template_endpts = endpt_idcs;
-
-%% 3 - Extract stimulus artifact peaks from template EMG signal
-[peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(segment);
-
-MS_STRUCT.peaks = peaks;
-MS_STRUCT.onset_pts = pk_locs; % peaks = proxy for stimulus onset points
-MS_STRUCT.peak_widths = pk_widths;
-MS_STRUCT.peak_proms = pk_proms;
+%% Extract stimulus artifact peaks from template EMG signal
+[peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(MS_STRUCT, segment);
 
 %% Re-reference ECoG signals in a bipolar montage using adjacent contacts
-ecog_bipolar = ms_bipolarchans(ecog);
+ecog_bipolar = ms_bipolarchans(MS_STRUCT, ecog);
 
-MS_STRUCT.ecog_bipolar = ecog_bipolar;
-%% 4 - Align stimulus artifact peaks in template EMG signal with ECOG and/or LFP signals
-%% % 5 - Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
-ms_struct = MS_STRUCT;
-%signal2epoch = ecog;
-signal2epoch = lfp;
-fs = sampling_rate_lfp; 
-timewindow = [-20 100]; % specify a time window in ms (w.r.t. stimulus onset)
+%% Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
+signal2epoch = input('Specify signal to epoch, e.g. lfp: ');
+fs = input('Specify sampling rate: ');
+timewindow = input('Specify time window in ms w.r.t. stimulus onset, e.g. [-20 100]: ');
 
-epoch_tensor = ms_getepochs(ms_struct, signal2epoch, fs, timewindow);
+epoch_tensor = ms_getepochs(MS_STRUCT, signal2epoch, fs, timewindow);
 
-MS_STRUCT.fs = fs;
-MS_STRUCT.timewindow = timewindow;
-MS_STRUCT.epoch_tensor = epoch_tensor;
-
-
-%% 6 - Average epochs to generate evoked potentials
-evoked_potentials = squeeze(mean(ms_struct.epoch_tensor,2)); % average all the epochs per channel (2nd dimension of epoch_tensor)
+%% Average epochs to generate EPs
+evoked_potentials = squeeze(mean(epoch_tensor,2)); % average all the epochs per channel (2nd dimension of epoch_tensor)
 MS_STRUCT.evoked_potentials = evoked_potentials;
-ms_struct = MS_STRUCT;
+ 
+%% Apply a baseline correction to the evoked potentials
+baselineperiod = input('Specify a baseline period, e.g. [5 100]: ');
+eps_demeaned = ms_baselinecorrect(MS_STRUCT, baselineperiod);
+
+%% Detrend evoked potentials if necessary
+option2detrend = input('Detrend EPs? [Y/N]: ','s');
+if option2detrend == 'Y'
+    signals2detrend = input('Specify signal to detrend, e.g. evoked_potentials: ');
+    eps_detrended = ms_detrend(MS_STRUCT, signals2detrend);
+else
+end
+
+%% PLOTTING - 
 %%% for ecog channels
-ep_dir = "C:\Users\Miocinovic_lab\OneDrive - Emory\1st Rotation - Miocinovic Lab\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
-%ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
-chanLocs_overview = ms_chanLocs_overview(ep_dir, ms_struct);
-%%% run this block to plot signals for a visual check
-chanlabels = lfp_configuration;
-ms_struct = MS_STRUCT;
-eps2plot = evoked_potentials;
-ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
-%%%
-
-%% 7 - Apply a baseline correction to the evoked potentials
-ms_struct = MS_STRUCT;
-baselineperiod = [5 100]; 
-
-eps_demeaned = ms_baselinecorrect(ms_struct, baselineperiod);
-MS_STRUCT.eps_demeaned = eps_demeaned;
-
+chanLocs_overview = ms_chanLocs_overview(ep_dir, MS_STRUCT);
 %%% run this block to plot signals for a visual check
 %ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
 chanlabels = "channelLocsSimpleBipolar";
-ms_struct = MS_STRUCT;
+  
 eps2plot = eps_demeaned;
 
 ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
 %%%
 
-%% 8 - Detrend evoked potentials if necessary
-eps_detrended = zeros(size(evoked_potentials,1), size(evoked_potentials,2));
-for e = 1:size(evoked_potentials,1)
-    evoked_potential = evoked_potentials(e,:);
-    ep_detrended = detrend(evoked_potential);
-    eps_detrended(e,:) = ep_detrended;
-end
-
-MS_STRUCT.eps_detrended = eps_detrended;
-
-%%% run this block to plot signals for a visual check
-%ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
-ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
-chanlabels = "channelLocsSimpleBipolar";
-ms_struct = MS_STRUCT;
-eps2plot = eps_detrended;
-
-ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
-%%%
-
-%% 9 - Average evoked potentials from the same region (e.g, primary motor cortex)
+%% Average evoked potentials from the same region (e.g, primary motor cortex)
 %ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
 chanlabels = "channelLocsSimpleBipolar";

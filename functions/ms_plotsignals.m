@@ -100,7 +100,15 @@ if m ~= 0
         
     end
 end
+
+% Save info that will be useful later on in a struct
+MS_STRUCT = struct;
+ephys = char(ephys);
+MS_STRUCT.ephys = ephys(1:end-1);
+
+evalin('base',MS_STRUCT)
 end
+
 
 %% Pending to-do's:
 % % add ecog and lfp labels from EP struct
