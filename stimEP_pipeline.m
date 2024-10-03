@@ -51,27 +51,7 @@ else
 end
 
 %% PLOTTING -
-ecog_or_lfp = input('Are you plotting lfp or ecog? ','s');
-
-if ecog_or_lfp == 'lfp'
-    lfp_labels = lfp_configuration;
-elseif ecog_or_lfp == 'ecog'
-    ecog_labels = input(['Field name options:', ...
-        '\n    channelLocsSimpleBipolar', ...
-        '\n    channelLocsSimpleMonopolar', ...
-        '\n    channelLocsBipolar', ...
-        '\n    channelLocsMonopolar', ...
-        '\n    channelLocs', ...
-        '\n    channelLocsSimple', ...
-        '\nEnter field name to use: '], 's');
-
-%%% for ecog channels
-chanLocs_overview = ms_chanLocs_overview(ep_dir, MS_STRUCT);
-%%% run this block to plot signals for a visual check
-%ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
-ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
-chanlabels = "channelLocsSimpleBipolar";
-  
+ecog_or_lfp = 'lfp';
 eps2plot = eps_demeaned;
 
 ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
