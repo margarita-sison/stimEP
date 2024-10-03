@@ -7,6 +7,8 @@ addpath(append(fxndir,'/'))
 datadir = uigetdir(cd, 'Select OR Data Folder');
 datadir = append(datadir,'/');
 
+% Add path to EP struct
+EPdir
 % Specify ephys code 
 ephys = input('Specify ephys code, e.g. ephys001: ','s');
 ephys = append(ephys,'/'); 
