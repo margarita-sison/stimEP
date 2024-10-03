@@ -50,7 +50,11 @@ if option2detrend == 'Y'
 else
 end
 
-%% PLOTTING - 
+%% PLOTTING -
+ecog_or_lfp = input('Are you plotting lfp or ecog? ','s');
+
+if ecog_or_lfp == 'lfp'
+    lfp_labels = input('Please provide ')
 %%% for ecog channels
 chanLocs_overview = ms_chanLocs_overview(ep_dir, MS_STRUCT);
 %%% run this block to plot signals for a visual check
