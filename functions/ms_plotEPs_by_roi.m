@@ -1,4 +1,4 @@
-function ms_plotEPs_by_roi(ms_struct, roi_order)
+function ms_plotEPs_by_roi(MS_STRUCT, roi_order)
 
 % Function
 % --------
@@ -19,7 +19,7 @@ function ms_plotEPs_by_roi(ms_struct, roi_order)
 % Figure displaying evoked potentials and accompanying labels
 
 %% Prepare region-specific colors for plotting
-rois = ms_struct.rois; % roi/s = region/s of interest
+rois = MS_STRUCT.rois; % roi/s = region/s of interest
 
 colorpalette = {"#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
     "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
@@ -32,15 +32,15 @@ for r = 1:length(rois)
 end
 
 %% Prepare x-axis values in ms
-start_time = ms_struct.timewindow(1); % start time in ms
-end_time = ms_struct.timewindow(2); % end time in ms
+start_time = MS_STRUCT.timewindow(1); % start time in ms
+end_time = MS_STRUCT.timewindow(2); % end time in ms
 
-samples_per_ms = ms_struct.fs/1000; % sampling rate in ms
+samples_per_ms = MS_STRUCT.fs/1000; % sampling rate in ms
 
 xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
 
 %% Plot the EPs
-EPs_by_roi = ms_struct.EPs_by_roi;
+EPs_by_roi = MS_STRUCT.EPs_by_roi;
 figure;
 %fig.WindowState = 'maximized';
 
@@ -50,20 +50,20 @@ offset = max(EPs_by_roi,[],"all"); % to plot signals on top of each other on the
 ytick_vals = [];
 ytick_labels = {};
 
-for r = roi_order
+for r = 1:size(EPs_by_roi, 1);%roi_order
     EP_by_roi = EPs_by_roi(r,:);
    
-    yvals = EP_by_roi+offset*counter; % to plot signals on top of each other on the same axes
+    yvals = EP_by_roi+offset*counter*2; % to plot signals on top of each other on the same axes
 
-    poststim_peaks = ms_struct.poststim_peaks_all{r};
-    idcs = [];
-    for p = 1:length(poststim_peaks)
-        [~,idx] = min(abs(EP_by_roi-poststim_peaks(p)));
-        idcs = [idcs idx];
-    end
+    % poststim_peaks = ms_struct.poststim_peaks_all{r};
+    % idcs = [];
+    % for p = 1:length(poststim_peaks)
+    %     [~,idx] = min(abs(EP_by_roi-poststim_peaks(p)));
+    %     idcs = [idcs idx];
+    % end
 
-    plot(xaxis_ms, yvals, '-', 'Marker', "|", 'MarkerIndices', idcs, 'MarkerSize', 30, 'MarkerEdgeColor', "#000080", 'MarkerFaceColor', "#000080")
-
+    %plot(xaxis_ms, yvals, '-', 'Marker', "|", 'MarkerIndices', idcs, 'MarkerSize', 30, 'MarkerEdgeColor', "#000080", 'MarkerFaceColor', "#000080")
+    plot(xaxis_ms, yvals)
     ytick_vals = [ytick_vals yvals(1)];
     ytick_labels = [ytick_labels rois{r}];
 
@@ -72,11 +72,12 @@ for r = roi_order
 end
 hold off 
 xlim([start_time end_time])
-ylim([min(EPs_by_roi(1,:)) offset*counter])
+ylim([min(EPs_by_roi(1,:)) offset*counter*2])
 yticks(round(ytick_vals))
 yticklabels(ytick_labels)
+set(gca,'TickLabelInterpreter','none')
 
-title(ms_struct.ephys,'FontWeight','bold')
+title(MS_STRUCT.ephys,'FontWeight','bold')
 xlabel("Time w.r.t. stimulus onset (ms)")
 
 end

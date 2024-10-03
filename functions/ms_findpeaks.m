@@ -1,4 +1,4 @@
-function [peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(MS_STRUCT, segment)
+function [peaks, pk_locs, pk_widths, pk_proms, MS_STRUCT] = ms_findpeaks(MS_STRUCT, segment)
 
 % Function
 % --------
@@ -49,5 +49,4 @@ MS_STRUCT.peaks = peaks;
 MS_STRUCT.onset_pts = pk_locs; % peaks = proxy for stimulus onset points
 MS_STRUCT.peak_widths = pk_widths;
 MS_STRUCT.peak_proms = pk_proms;
-evalin('base',MS_STRUCT)
 end

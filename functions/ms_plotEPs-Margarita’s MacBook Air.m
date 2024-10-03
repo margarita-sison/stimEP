@@ -19,18 +19,17 @@ function ms_plotEPs(MS_STRUCT, eps2plot)
 
 %% Extract channel locations from 'EP' struct
 if ~exist('EP','var')
-    disp('Select EP file.')
     [EP_file, EP_dir] = uigetfile;
     load(strcat(EP_dir,EP_file))
 end
 
 ephys_num = str2double(MS_STRUCT.ephys(6:end));
 
-ecog_or_lfp = input('Are you plotting LFP or ECoG? ','s');
+ecog_or_lfp = input('Are you plotting lfp or ecog? ','s');
 
-if strcmp(ecog_or_lfp, 'LFP')
-    chanlabels = 1:size(eps2plot,1);
-elseif strcmp(ecog_or_lfp, 'ECoG')
+if strcmp(ecog_or_lfp, 'lfp')
+    chanlabels = lfp_configuration;
+elseif strcmp(ecog_or_lfp, 'ecog')
     ecog_labels = input(['Field name options:', ...
         '\n    channelLocsSimpleBipolar', ...
         '\n    channelLocsSimpleMonopolar', ...
@@ -39,7 +38,7 @@ elseif strcmp(ecog_or_lfp, 'ECoG')
         '\n    channelLocs', ...
         '\n    channelLocsSimple', ...
         '\nEnter field name to use: '], 's');
-    chanlabels = getfield(EP(ephys_num),ecog_labels);
+    chanlabels = getfield(EP(ephys_num), ecog_labels);
 end
 
 
@@ -48,9 +47,6 @@ rois = unique(chanlabels); % roi/s = region/s of interest
 colorpalette = {[0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0], ...
     [0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0], ...
     [0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0], [0 0 0]};
-% colorpalette = {"#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
-%     "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F" ...
-%     "#0072BD" "#D95319"	"#EDB120" "#7E2F8E" "#77AC30" "#4DBEEE" "#A2142F"};
 roi_colors = {}; 
 
 for r = 1:length(rois)
@@ -68,30 +64,19 @@ xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
 
 %% Prepare figure container
 n_chans = length(chanlabels);
-split_ans = input('Plot EPs in 2 columns? [Y/N]: ','s');
-if split_ans == 'Y'
-    n_cols = 2;
-else
-    n_cols = 1;
-end
-
-n_rows = 1;
+n_rows = input(['n channels = ' num2str(n_chans) '. n rows = ']); % prompts user to select number of rows for the tiled figure given the number of channels
+n_cols = input(['n channels = ' num2str(n_chans) '. n columns = ']); % prompts user to select number of columns for the tiled figure given the number of channels
 
 fig = figure;
 
 tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact');
-title(tiles,MS_STRUCT.ephys,'FontWeight','bold')
+title(tiles,ms_struct.ephys,'FontWeight','bold')
 xlabel(tiles, "Time w.r.t. stimulus onset (ms)")
 
-fig.WindowState = 'maximized';
-
+fig.Position([3 4]) = [560*1.5 420*2]; % adjust fig width & height
 %% Plot the EPs
 % Split channels into 2 sets, 1 for each of the 2 columns of the figure
-if n_cols == 2
-    chan_subsets = {1:n_chans/2 n_chans/2+1:n_chans};
-else 
-    chan_subsets = {chanlabels};
-end
+chan_subsets = {1:n_chans/2 n_chans/2+1:n_chans};
 
 for s = 1:length(chan_subsets)
     nexttile
@@ -104,26 +89,22 @@ for s = 1:length(chan_subsets)
     ytick_labels = {};
 
     for c = chan_subset  
-        yvals = eps2plot(c,:)+offset*counter*1.5; % to plot signals on top of each other in 1 tile
+        yvals = eps2plot(c,:)+offset*counter; % to plot signals on top of each other in 1 tile
         counter = counter+1;
-        
-        if strcmp(ecog_or_lfp, 'LFP')
-            color_idx = chanlabels(c);
-        elseif strcmp(ecog_or_lfp,'ECoG')
-            color_idx = find(contains(rois,chanlabels{c}));
-        end
-        plot(xaxis_ms, yvals, 'Color', [0 0 0]);
-        
+      
+        color_idx = find(contains(rois,chan_annots{c}));
+        plot(xaxis_ms, yvals, 'Color', roi_colors{contains(rois,chan_annots{c})});
+        plot(xaxis_ms, yvals);
         ytick_vals = [ytick_vals yvals(1)];
-        ytick_labels = [ytick_labels chanlabels(c)];
-
+        ytick_labels = [ytick_labels chan_annots{c}];
+     
         hold on
     end
     hold off
  
     xlim([start_time end_time])
-    ylim([min(eps2plot(chan_subset(1),:)) offset*counter*1.5])
+    ylim([min(eps2plot(chan_subset(1),:)) offset*counter])
     yticks(round(ytick_vals))
-    yticklabels(ytick_labels), set(gca,'TickLabelInterpreter','none')
+    yticklabels(ytick_labels)
 end
 end

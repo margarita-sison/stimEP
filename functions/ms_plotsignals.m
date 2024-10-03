@@ -1,4 +1,4 @@
-function ms_plotsignals(datadir, ephys, signaltype)
+function MS_STRUCT = ms_plotsignals(datadir, ephys, signaltype)
 % Function
 % --------
 % Plots all signals of a signal type (e.g., ECoG, EMG, LFP) for visual inspection
@@ -105,8 +105,7 @@ end
 MS_STRUCT = struct;
 ephys = char(ephys);
 MS_STRUCT.ephys = ephys(1:end-1);
-
-evalin('base',MS_STRUCT)
+ 
 end
 
 

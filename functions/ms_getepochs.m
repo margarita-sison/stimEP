@@ -1,4 +1,4 @@
-function epoch_tensor = ms_getepochs(MS_STRUCT, signal2epoch, fs, timewindow)
+function [epoch_tensor, MS_STRUCT] = ms_getepochs(MS_STRUCT, signal2epoch, fs, timewindow)
 
 % Function
 % --------
@@ -49,5 +49,5 @@ end
 MS_STRUCT.fs = fs;
 MS_STRUCT.timewindow = timewindow;
 MS_STRUCT.epoch_tensor = epoch_tensor;
-evalin('base',MS_STRUCT)
+ 
 end

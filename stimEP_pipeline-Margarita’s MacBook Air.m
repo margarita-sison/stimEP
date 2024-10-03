@@ -14,25 +14,25 @@ ephys = append(ephys,'/');
 % Specify signal type to plot
 signaltype = input('Specify signal type to plot: ','s');
 
-MS_STRUCT = ms_plotsignals(datadir, ephys, signaltype);
+ms_plotsignals(datadir, ephys, signaltype)
 
 %% Trim the template EMG signal before extracting stimulus artifact peaks
 % After visually inspecting the signal, you may want to only use a part of it
 signal2trim = input('Specify signal to trim, e.g. emg(1,:): ');
-[segment, endpt_idcs, MS_STRUCT] = ms_trimsignal(MS_STRUCT, signal2trim);
+[segment, endpt_idcs] = ms_trimsignal(MS_STRUCT, signal2trim);
 
 %% Extract stimulus artifact peaks from template EMG signal
-[peaks, pk_locs, pk_widths, pk_proms, MS_STRUCT] = ms_findpeaks(MS_STRUCT, segment);
+[peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(MS_STRUCT, segment);
 
 %% Re-reference ECoG signals in a bipolar montage using adjacent contacts
-[ecog_bipolar, MS_STRUCT] = ms_bipolarchans(MS_STRUCT, ecog);
+ecog_bipolar = ms_bipolarchans(MS_STRUCT, ecog);
 
 %% Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
 signal2epoch = input('Specify signal to epoch, e.g. lfp: ');
 fs = input('Specify sampling rate: ');
 timewindow = input('Specify time window in ms w.r.t. stimulus onset, e.g. [-20 100]: ');
 
-[epoch_tensor, MS_STRUCT] = ms_getepochs(MS_STRUCT, signal2epoch, fs, timewindow);
+epoch_tensor = ms_getepochs(MS_STRUCT, signal2epoch, fs, timewindow);
 
 %% Average epochs to generate EPs
 evoked_potentials = squeeze(mean(epoch_tensor,2)); % average all the epochs per channel (2nd dimension of epoch_tensor)
@@ -40,19 +40,21 @@ MS_STRUCT.evoked_potentials = evoked_potentials;
  
 %% Apply a baseline correction to the evoked potentials
 baselineperiod = input('Specify a baseline period, e.g. [5 100]: ');
-[eps_demeaned, MS_STRUCT] = ms_baselinecorrect(MS_STRUCT, baselineperiod);
+eps_demeaned = ms_baselinecorrect(MS_STRUCT, baselineperiod);
 
 %% Detrend evoked potentials if necessary
 option2detrend = input('Detrend EPs? [Y/N]: ','s');
 if option2detrend == 'Y'
     signals2detrend = input('Specify signal to detrend, e.g. evoked_potentials: ');
-    [eps_detrended, MS_STRUCT] = ms_detrend(MS_STRUCT, signals2detrend);
+    eps_detrended = ms_detrend(MS_STRUCT, signals2detrend);
 else
 end
 
 %% PLOTTING -
+ecog_or_lfp = 'lfp';
 eps2plot = eps_demeaned;
-ms_plotEPs(MS_STRUCT, eps2plot)
+
+ms_plotEPs(ep_dir, chanlabels, ms_struct, eps2plot)
 %%%
 
 %% Average evoked potentials from the same region (e.g, primary motor cortex)
@@ -62,7 +64,7 @@ chanlabels = "channelLocsSimpleBipolar";
 ms_struct = MS_STRUCT;
 eps2average = eps_demeaned;
 
-[EPs_by_roi, rois] = ms_EPs_by_roi(MS_STRUCT, eps2average);
+[EPs_by_roi, rois] = ms_EPs_by_roi(ep_dir, chanlabels, ms_struct, eps2average);
 MS_STRUCT.EPs_by_roi = EPs_by_roi;
 MS_STRUCT.rois = rois;
 ms_struct = MS_STRUCT;
@@ -100,7 +102,7 @@ MS_STRUCT.poststim_pkproms_all = poststim_pkproms_all;
 %% 11 - Plot average evoked potentials by brain region
 ms_struct = MS_STRUCT;
 roi_order = [3 2 1 4];
-ms_plotEPs_by_roi(MS_STRUCT, roi_order)
+ms_plotEPs_by_roi(ms_struct, roi_order)
 
 %% Pending to-do's
 % Visualize epochs and discard artifact-laden epochs

@@ -1,4 +1,4 @@
-function eps_demeaned = ms_baselinecorrect(MS_STRUCT, baselineperiod)
+function [eps_demeaned, MS_STRUCT] = ms_baselinecorrect(MS_STRUCT, baselineperiod)
 % Function
 % --------
 % Subtracts the mean of a specified baseline period from every point in the
@@ -41,5 +41,5 @@ for e = 1:size(evoked_potentials,1)
     eps_demeaned(e,:) = ep_demeaned;
 end
 MS_STRUCT.eps_demeaned = eps_demeaned;
-evalin('base',MS_STRUCT)
+ 
 end
