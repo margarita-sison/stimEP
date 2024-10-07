@@ -1,31 +1,45 @@
-%% Visually inspect EMG signals before selecting a template EMG signal
+%% Prepare workspace
 % Add path to folder containing all the functions used here
-fxndir = uigetdir(cd, 'Select Functions Folder'); 
-addpath(append(fxndir,'/'))
+disp('Select functions folder: ')
+fxndir = uigetdir; 
+addpath(append(fxndir, '/'))
 
-% Add path to folder containing all the ephys files 
-datadir = uigetdir(cd, 'Select OR Data Folder');
-datadir = append(datadir,'/');
+% Load EP struct
+disp('Load EP struct: ')
+[ep_file, ep_fileloc] = uigetfile;
+load(append(ep_fileloc, ep_file))
 
-% Specify ephys code 
-ephys = input('Specify ephys code, e.g. ephys001: ','s');
-ephys = append(ephys,'/'); 
+% Load SSEP file
+disp('Load SSEP file: ')
+[ssep_file, ssep_fileloc] = uigetfile;
+load(append(ssep_fileloc, ssep_file))
 
-% Specify signal type to plot
-signaltype = input('Specify signal type to plot: ','s');
+% Make output folder
+disp('Select save location for output folder: ')
+savedir = uigetdir;
 
-MS_STRUCT = ms_plotsignals(datadir, ephys, signaltype);
+output_folder = strcat(savedir,'/stimEP_outputs/');
+if ~isfolder(output_folder)
+    mkdir(output_folder)
+end
+
+ephys = input('Specify ephys code, e.g. ephys001: ', 's');
+
+%% Visually inspect EMG signals before selecting a template EMG signal
+ms_plotemg(ephys, emg, emg_labels);
 
 %% Trim the template EMG signal before extracting stimulus artifact peaks
-% After visually inspecting the signal, you may want to only use a part of it
-signal2trim = input('Specify signal to trim, e.g. emg(1,:): ');
-[segment, endpt_idcs, MS_STRUCT] = ms_trimsignal(MS_STRUCT, signal2trim);
+emg2trim_num = input('Specify EMG signal to trim, e.g. 1: ');
+emg2trim = emg(emg2trim_num,:);
+emg2trim_label = emg_labels(emg2trim_num);
+
+[segment, endpt_idcs] = ms_trimsignal(ephys, emg2trim, emg2trim_label);
 
 %% Extract stimulus artifact peaks from template EMG signal
-[peaks, pk_locs, pk_widths, pk_proms, MS_STRUCT] = ms_findpeaks(MS_STRUCT, segment);
+[peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(ephys, segment, emg2trim_label);
 
 %% Re-reference ECoG signals in a bipolar montage using adjacent contacts
-[ecog_bipolar, MS_STRUCT] = ms_bipolarchans(MS_STRUCT, ecog);
+ecog_bipolar = ms_bipolarchans(ecog);
 
 %% Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
 signal2epoch = input('Specify signal to epoch, e.g. lfp: ');
