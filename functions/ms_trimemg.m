@@ -1,4 +1,4 @@
-function [segment, endpt_idcs] = ms_trimsignal(ephys, signal2trim, signal2trim_label)
+function struct = ms_trimemg(struct)
 
 % Function
 % --------
@@ -15,26 +15,31 @@ function [segment, endpt_idcs] = ms_trimsignal(ephys, signal2trim, signal2trim_l
 % segment (1xn double)      - resulting segment, n = number of samples
 % endpt_idcs (1x2 double)   - starting and end indices (xvals) of segment in the original signal
 
-signal2trim_label = char(signal2trim_label);
+ephys_code = struct.ephys_code;
+ephys_folder = struct.ephys_folder;
 
-disp('Select stimEP_outputs folder as save location:')
-output_folder = uigetdir;
+emg2trim_idx = struct.emg2trim_idx;
+emg2trim = struct.emg2trim;
+emg2trim_label = char(struct.emg2trim_label);
 
 fig = figure; % prepare fig container
 fig.WindowState = 'maximized';
 
-plot(signal2trim) % plot the signal  
+plot(emg2trim) % plot the signal  
 [x, ~] = ginput(2); % prompt the user to select 2 points
 
 start_idx = round(x(1)); % get the starting index (xval) of segment in the original signal
 end_idx = round(x(2)); % get the end index (xval) of segment in the original signal
 endpt_idcs = [start_idx end_idx];
 
-segment = signal2trim(endpt_idcs(1):endpt_idcs(2)); % use the start & end indices to trim the original signal
-plot(segment) % plot the resulting segment
+emg_segment = emg2trim(endpt_idcs(1):endpt_idcs(2)); % use the start & end indices to trim the original signal
+plot(emg_segment) % plot the resulting segment
 
-title(append(ephys,' - ',signal2trim_label),'FontWeight','bold')
+title(ephys_code+" - emg("+emg2trim_idx+",:) "+emg2trim_label,'FontWeight','bold')
 xlabel("Sampling units (a.u.)"), ylabel("Amplitude (µV)")
 
-saveas(fig, append(output_folder,'/',ephys,'_',signal2trim_label,'.png'))
+struct.emg_segment = emg_segment;
+struct.segment_endpt_idcs = endpt_idcs;
+
+saveas(fig, append(ephys_folder,'/emg_segment'))
 end

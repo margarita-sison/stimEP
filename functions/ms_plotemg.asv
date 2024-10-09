@@ -35,14 +35,13 @@ for q = 1:quotient
     chan_set_last = chan_set(2); % last channel in the set
 
     %%% prepare fig container here
-    fig(q) = figure; 
+    fig(m+1) = figure('visible','off','Units','normalized','OuterPosition',[0 0 1 1]);
 
     tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact','TileIndexing','columnmajor');
     title(tiles,append(ephys_code,' - emg'),'FontWeight','bold')
     xlabel(tiles, "Sampling units (a.u.)"), ylabel(tiles, "Amplitude (µV)")
 
-    fig(q).WindowState = 'maximized'; % maximize window
-    %%%
+     %%%
 
     for s = chan_set_first:chan_set_last
         nexttile
@@ -63,13 +62,13 @@ if m ~= 0
     chan_set_last = chan_set(2); % last channel in the set
     
     %%% prepare fig container  here
-    fig(m+1) = figure;
+    fig(m+1) = figure('visible','off','Units','normalized','OuterPosition',[0 0 1 1]);
+
 
     tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact','TileIndexing','columnmajor');
     title(tiles,append(ephys_code,' - emg'),'FontWeight','bold')
     xlabel(tiles, "Sampling units (a.u.)"), ylabel(tiles, "Amplitude (µV)")
     
-    fig(m+1).WindowState = 'maximized'; % maximize window
     %%%
 
     for s = chan_set_first:chan_set_last

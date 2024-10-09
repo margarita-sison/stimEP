@@ -1,4 +1,4 @@
-function [peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(ephys, segment, segment_label)
+function struct = ms_findpeaks(struct)
 
 % Function
 % --------
@@ -19,40 +19,49 @@ function [peaks, pk_locs, pk_widths, pk_proms] = ms_findpeaks(ephys, segment, se
 % pk_widths (1xn double)    - peak widths (as defined in MATLAB)
 % pk_proms (1xn double)     - peak prominences (as defined in MATLAB)
 
-segment_label = char(segment_label);
+ephys_code = struct.ephys_code;
+ephys_folder = struct.ephys_folder;
 
-disp('Select stimEP_outputs folder as save location:')
-output_folder = uigetdir;
+emg2trim_idx = struct.emg2trim_idx;
+emg_segment = struct.emg_segment;
+emg2trim_label = char(struct.emg2trim_label);
 
 %% Find the maximum peak prominence in the signal
-[~, ~, ~, pk_proms] = findpeaks(segment); 
-max_prom = (max(pk_proms));
+[~, ~, ~, pk_proms] = findpeaks(emg_segment); 
+max_prom = max(pk_proms);
 
 %% Let user specify a minimum threshold (% of maximum  peak prominence expressed as a decimal)
 threshold = input('Enter threshold as decimal: '); % percentage of maximum peak prominence expressed as a decimal
 min_prom = threshold*max_prom; % e.g., 90% of max. peak prominence
 
 %% Display peaks detected based on the specified threshold
-figure;
-findpeaks(segment,'MinPeakProminence',min_prom)
+fig = figure; % prepare fig container
+fig.WindowState = 'maximized';
+findpeaks(emg_segment,'MinPeakProminence',min_prom)
 
 %% Provide the option to adjust threshold
-user_ans = input('Adjust threshold? Y/N: ',"s");
+user_ans = input('Adjust threshold? [Y/N]: ', 's');
 
 while user_ans == "Y"
     threshold = input('Enter threshold as decimal: ');
     min_prom = threshold*max_prom;
 
-    figure;
-    findpeaks(segment,'MinPeakProminence',min_prom) 
+    fig = figure; % prepare fig container
+    fig.WindowState = 'maximized';
+    findpeaks(emg_segment,'MinPeakProminence',min_prom) 
 
-    user_ans = input('Adjust threshold? Y/N: ',"s");
+    user_ans = input('Adjust threshold? [Y/N]: ','s');
 end
 
 %% Call 'findpeaks' with minimum peak prominence specified
-[peaks, pk_locs, pk_widths, pk_proms] = findpeaks(segment,'MinPeakProminence',min_prom);
-title(append(ephys,' - ',segment_label),'FontWeight','bold')
+[peaks, pk_locs, pk_widths, pk_proms] = findpeaks(emg_segment,'MinPeakProminence',min_prom);
+title(ephys_code+" - emg("+emg2trim_idx+",:) "+emg2trim_label,'FontWeight','bold')
 xlabel("Sampling units (a.u.)"), ylabel("Amplitude (µV)")
 
-saveas(gcf, append(output_folder,'/',ephys,'_',segment_label,'_peaks.png'))
+struct.peaks = peaks;
+struct.pk_locs = pk_locs;
+struct.pk_widths = pk_widths;
+struct.pk_proms = pk_proms;
+
+saveas(fig, append(ephys_folder,'/emg_segment_peaks'))
 end
