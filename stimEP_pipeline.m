@@ -79,7 +79,8 @@ saveas(append(ephys_folder,'/EPHYS_STRUCT.mat'))
 
 %% Plot epochs
 epochs2plot = input('Specify epochs to plot, e.g. lfp_bipolar_epochs: ', 's');
-ms_plotepochs(EPHYS_STRUCT, epochs2plot, .)
+n_epochs = input()
+ms_plotepochs(EPHYS_STRUCT, epochs2plot, n_epochs)
 
 % %% Apply a baseline correction to the evoked potentials
 % baseline_period = input('Specify baseline period in ms w.r.t. stimulus onset, e.g. [5 100]: ');
