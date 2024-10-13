@@ -1,4 +1,4 @@
-%% Prepare workspace ======================================================
+%% Prepare workspace 
 
 % Add path to folder containing the functions used in this pipeline
 disp('Select functions folder: ')
@@ -39,13 +39,13 @@ EPHYS_STRUCT = struct;
 EPHYS_STRUCT.ephys_code = ephys_code;
 EPHYS_STRUCT.ephys_folder = ephys_folder;
 
-%% Visually inspect EMG signals before selecting a template EMG signal ====
+%% Visually inspect EMG signals before selecting a template EMG signal 
 EPHYS_STRUCT.emg = emg;
 EPHYS_STRUCT.emg_labels = emg_labels;
 
 ms_plotemg(EPHYS_STRUCT);
 
-%% Trim the template EMG signal before extracting stimulus artifact peaks =
+%% Trim the template EMG signal before extracting stimulus artifact peaks 
 emg2trim_idx = input('Specify index of EMG signal to trim, e.g. 1: ');
 emg2trim = emg(emg2trim_idx,:);
 emg2trim_label = emg_labels(emg2trim_idx);
@@ -56,31 +56,31 @@ EPHYS_STRUCT.emg2trim_label = emg2trim_label;
 
 EPHYS_STRUCT = ms_trimemg(EPHYS_STRUCT);
 
-%% Extract stimulus artifact peaks from template EMG signal ===============
+%% Extract stimulus artifact peaks from template EMG signal 
+EPHYS_STRUCT.sampling_rate_emg = sampling_rate_emg;
 EPHYS_STRUCT = ms_findpeaks(EPHYS_STRUCT);
 
-%% Do bipolar re-referencing on ECoG or LFP signals =======================
+%% Do bipolar re-referencing on ECoG or LFP signals 
 EPHYS_STRUCT.ecog = ecog;
 EPHYS_STRUCT.lfp = lfp;
 
-signal_type = input('Specify type of signal to re-reference, e.g. lfp: ', 's');
-EPHYS_STRUCT = ms_refbipolar(EPHYS_STRUCT, signal_type);
+signal2reref = input('Specify signal to re-reference, e.g. lfp: ', 's');
+EPHYS_STRUCT = ms_refbipolar(EPHYS_STRUCT, signal2reref);
 
 %% Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
 EPHYS_STRUCT.sampling_rate_ecog = sampling_rate_ecog;
 EPHYS_STRUCT.sampling_rate_lfp = sampling_rate_lfp;
 
 time_window = input('Specify time window in ms w.r.t. stimulus onset, e.g. [-20 100]: ');
-signal_type = input('Specify type of signal to get epochs from, e.g. lfp_bipolar: ', 's');
-sampling_rate = input('Specify sampling rate of signals: ', 's');
+signal2epoch = input('Specify signal to get epochs from, e.g. lfp_bipolar: ', 's');
 
-EPHYS_STRUCT = ms_getepochs(EPHYS_STRUCT, time_window, signal_type, sampling_rate);
-saveas(append(ephys_folder,'/EPHYS_STRUCT.mat'))
+EPHYS_STRUCT = ms_getepochs(EPHYS_STRUCT, time_window, signal2epoch);
+%%
+save(append(ephys_folder,"/EPHYS_STRUCT.mat"),"EPHYS_STRUCT")
 
 %% Plot epochs
 epochs2plot = input('Specify epochs to plot, e.g. lfp_bipolar_epochs: ', 's');
-n_epochs = input()
-ms_plotepochs(EPHYS_STRUCT, epochs2plot, n_epochs)
+ms_plotepochs(EPHYS_STRUCT, epochs2plot)
 
 % %% Apply a baseline correction to the evoked potentials
 % baseline_period = input('Specify baseline period in ms w.r.t. stimulus onset, e.g. [5 100]: ');
@@ -95,15 +95,14 @@ ms_plotepochs(EPHYS_STRUCT, epochs2plot, n_epochs)
 % end
 
 %% Average epochs to generate EPs
-signal_type = input('Specify tensor to generate EPs from, e.g. lfp_bipolar_epochs: ', 's');
-signal_tensor = struct.(signal_type);
+epochs2average = input('Specify epochs to average, e.g. lfp_bipolar_epochs: ', 's');
+epoch_tensor = struct.(epochs2average);
 
-evoked_potentials = squeeze(mean(signal_tensor,2)); % average all the epochs per channel (2nd dimension of signal_tensor)
-EPHYS_STRUCT.(append(signal_type(1:end-7),'_EPs')) = evoked_potentials;
+evoked_potentials = squeeze(mean(epoch_tensor,2)); % average all the epochs per channel (2nd dimension of signal_tensor)
+EPHYS_STRUCT.(append(epochs2average(1:end-7),'_EPs')) = evoked_potentials;
  
-%% PLOTTING -
-EPs2plot = input('Specify EP matrix to plot, e.g. ecog_bipolar_EPs: ','s');
-sampling_rate = input('Specify sampling rate of signals: ', 's');
+%% PLOTTING - 
+EPs2plot = input('Specify EPs to plot, e.g. ecog_bipolar_EPs: ','s');
 EPs2plot_labels = input('Specify channel labels to use, e.g. EP.channelLocsSimpleBipolar: ');
 
 ms_plotEPs(EPHYS_STRUCT, EPs2plot, sampling_rate, EPs2plot_labels)
@@ -121,7 +120,7 @@ EPHYS_STRUCT.EPs_by_roi = EPs_by_roi;
 EPHYS_STRUCT.rois = rois;
 ms_struct = EPHYS_STRUCT;
 
-%% 10 - Extract post-stimuulus peaks from evoked potentials
+%% 10 - Extract post-stimulus peaks from evoked potentials
 % prepare empty cell containers for storing peak values
 poststim_peaks_all = cell(size(EPs_by_roi,1),1);
 poststim_pklocs_all = cell(size(EPs_by_roi,1),1);

@@ -26,6 +26,7 @@ emg2trim_idx = struct.emg2trim_idx;
 emg_segment = struct.emg_segment;
 emg2trim_label = char(struct.emg2trim_label);
 
+sampling_rate = struct.sampling_rate_emg;
 %% Find the maximum peak prominence in the signal
 [~, ~, ~, pk_proms] = findpeaks(emg_segment); 
 max_prom = max(pk_proms);
@@ -58,6 +59,44 @@ end
 title(ephys_code+" - emg("+emg2trim_idx+",:) "+emg2trim_label,'FontWeight','bold')
 xlabel("Sampling units (a.u.)"), ylabel("Amplitude (µV)")
 
+%%
+
+for p = 1:length(pk_locs)-1
+    if p >= length(pk_locs)
+        continue 
+    end
+
+    if pk_locs(p+1)-pk_locs(p) < sampling_rate*0.97
+        peaks(p+1) = 0;
+        pk_locs(p+1) = 0;
+        pk_widths(p+1) = 0;
+        pk_proms(p+1) = 0;
+        
+        peaks = nonzeros(peaks);
+        pk_locs = nonzeros(pk_locs);
+        pk_widths = nonzeros(pk_widths);
+        pk_proms = nonzeros(pk_proms);
+    end
+end
+
+for p = 1:length(pk_locs)-1
+    if p >= length(pk_locs)
+        continue 
+    end
+
+    if pk_locs(p+1)-pk_locs(p) < sampling_rate*0.97
+        peaks(p+1) = 0;
+        pk_locs(p+1) = 0;
+        pk_widths(p+1) = 0;
+        pk_proms(p+1) = 0;
+        
+        peaks = nonzeros(peaks);
+        pk_locs = nonzeros(pk_locs);
+        pk_widths = nonzeros(pk_widths);
+        pk_proms = nonzeros(pk_proms);
+    end
+end
+      
 struct.peaks = peaks;
 struct.pk_locs = pk_locs;
 struct.pk_widths = pk_widths;
