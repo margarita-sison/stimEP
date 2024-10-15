@@ -40,47 +40,248 @@ EPHYS_STRUCT.ephys_code = ephys_code;
 EPHYS_STRUCT.ephys_folder = ephys_folder;
 
 %% Visually inspect EMG signals before selecting a template EMG signal 
+
+% Set up tiling configuration 
+n_chans = size(emg,1); % number of channels
+n_rows = input(['There are ' num2str(n_chans) ' channels to plot. Specify n rows: ']); % prompts user to select number of rows for the tiled figure given the number of channels
+n_cols = input(['There are ' num2str(n_chans) ' channels to plot. Specify n columns: ']); % prompts user to select number of columns for the tiled figure given the number of channels
+n_tiles = n_rows*n_cols; % total number of tiles
+
+% Plot the signals
+quotient = floor(n_chans/n_tiles); % for figure formatting purposes; quotient = number of figures that will have complete number of rows and columns specified
+
+for q = 1:quotient
+    chan_set = [(q-1)*n_tiles+1 q*n_tiles]; % set of channels that will be plotted on the current figure
+    chan_set_first = chan_set(1); % first channel in the set
+    chan_set_last = chan_set(2); % last channel in the set
+
+    %%% prepare fig container here
+    fig(q) = figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+
+    tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact','TileIndexing','columnmajor');
+    title(tiles,append(ephys_code,' - emg'),'FontWeight','bold')
+    xlabel(tiles, "Sampling units (a.u.)"), ylabel(tiles, "Amplitude (µV)")
+    %%%
+
+    for s = chan_set_first:chan_set_last
+        nexttile
+        plot(emg(s,:)) 
+        
+        title("emg("+s+",:) - "+emg_labels(s))
+    end
+
+    saveas(fig, append(ephys_folder,'/emg'))
+end
+
+% If number of channels is odd, there will be some leftover channels to plot:
+m = mod(n_chans,n_tiles);
+
+if m ~= 0
+    chan_set = [n_tiles-m+1 n_tiles]; % set of channels that will be plotted on the current figure
+    chan_set_first = chan_set(1); % first channel in the set
+    chan_set_last = chan_set(2); % last channel in the set
+    
+    %%% prepare fig container  here
+    fig(m+1) = figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+
+    tiles = tiledlayout(n_rows,n_cols,'TileSpacing','tight','Padding','tight','TileIndexing','columnmajor');
+    title(tiles,append(ephys_code,' - emg'),'FontWeight','bold')
+    xlabel(tiles, "Sampling units (a.u.)"), ylabel(tiles, "Amplitude (µV)")
+    
+     
+    %%%
+
+    for s = chan_set_first:chan_set_last
+        nexttile
+        plot(emg(s,:))
+
+        title("emg("+s+",:) - "+emg_labels(s))
+    end
+
+    saveas(fig, append(ephys_folder,'/emg'))
+end
+
 EPHYS_STRUCT.emg = emg;
 EPHYS_STRUCT.emg_labels = emg_labels;
-
-ms_plotemg(EPHYS_STRUCT);
 
 %% Trim the template EMG signal before extracting stimulus artifact peaks 
 emg2trim_idx = input('Specify index of EMG signal to trim, e.g. 1: ');
 emg2trim = emg(emg2trim_idx,:);
 emg2trim_label = emg_labels(emg2trim_idx);
 
+fig = figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+
+plot(emg2trim) % plot the signal  
+[x, ~] = ginput(2); % prompt the user to select 2 points
+
+start_idx = round(x(1)); % get the starting index (xval) of segment in the original signal
+end_idx = round(x(2)); % get the end index (xval) of segment in the original signal
+endpt_idcs = [start_idx end_idx];
+
+emg_segment = emg2trim(endpt_idcs(1):endpt_idcs(2)); % use the start & end indices to trim the original signal
+plot(emg_segment) % plot the resulting segment
+
+title(ephys_code+" - emg("+emg2trim_idx+",:) "+emg2trim_label,'FontWeight','bold')
+xlabel("Sampling units (a.u.)"), ylabel("Amplitude (µV)")
+
 EPHYS_STRUCT.emg2trim_idx = emg2trim_idx;
 EPHYS_STRUCT.emg2trim = emg2trim;
 EPHYS_STRUCT.emg2trim_label = emg2trim_label;
+EPHYS_STRUCT.emg_segment = emg_segment;
+EPHYS_STRUCT.segment_endpt_idcs = endpt_idcs;
 
-EPHYS_STRUCT = ms_trimemg(EPHYS_STRUCT);
-
+saveas(fig, append(ephys_folder,'/emg_segment'))
 %% Extract stimulus artifact peaks from template EMG signal 
+
+% Find the maximum peak prominence in the signal
+[~, ~, ~, pk_proms] = findpeaks(emg_segment); 
+max_prom = max(pk_proms);
+
+% Let user specify a minimum threshold (% of maximum  peak prominence expressed as a decimal)
+threshold = input('Enter threshold as decimal: '); % percentage of maximum peak prominence expressed as a decimal
+min_prom = threshold*max_prom; % e.g., 90% of max. peak prominence
+
+% Display peaks detected based on the specified threshold
+fig = figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+findpeaks(emg_segment,'MinPeakProminence',min_prom)
+
+% Provide the option to adjust threshold
+user_ans = input('Adjust threshold? [Y/N]: ', 's');
+
+while user_ans == "Y"
+    threshold = input('Enter threshold as decimal: ');
+    min_prom = threshold*max_prom;
+
+    fig = figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+    findpeaks(emg_segment,'MinPeakProminence',min_prom) 
+
+    user_ans = input('Adjust threshold? [Y/N]: ','s');
+end
+
+title(ephys_code+" - emg("+emg2trim_idx+",:) "+emg2trim_label,'FontWeight','bold')
+xlabel("Sampling units (a.u.)"), ylabel("Amplitude (µV)")
+
+% Call 'findpeaks' with minimum peak prominence specified
+[peaks, pk_locs, pk_widths, pk_proms] = findpeaks(emg_segment,'MinPeakProminence',min_prom);
+
+%
+for p = 1:length(pk_locs)-1
+    if p >= length(pk_locs)
+        continue 
+    end
+
+    if pk_locs(p+1)-pk_locs(p) < sampling_rate_emg*0.97
+        peaks(p+1) = 0;
+        pk_locs(p+1) = 0;
+        pk_widths(p+1) = 0;
+        pk_proms(p+1) = 0;
+        
+        peaks = nonzeros(peaks);
+        pk_locs = nonzeros(pk_locs);
+        pk_widths = nonzeros(pk_widths);
+        pk_proms = nonzeros(pk_proms);
+    end
+end
+
 EPHYS_STRUCT.sampling_rate_emg = sampling_rate_emg;
-EPHYS_STRUCT = ms_findpeaks(EPHYS_STRUCT);
+
+EPHYS_STRUCT.peaks = peaks;
+EPHYS_STRUCT.pk_locs = pk_locs;
+EPHYS_STRUCT.pk_widths = pk_widths;
+EPHYS_STRUCT.pk_proms = pk_proms;
+
+saveas(fig, append(ephys_folder,'/emg_segment_peaks'))
 
 %% Do bipolar re-referencing on ECoG or LFP signals 
 EPHYS_STRUCT.ecog = ecog;
 EPHYS_STRUCT.lfp = lfp;
 
 signal2reref = input('Specify signal to re-reference, e.g. lfp: ', 's');
-EPHYS_STRUCT = ms_refbipolar(EPHYS_STRUCT, signal2reref);
+
+if strcmp(signal2reref, 'ecog')
+    
+    n_chans = size(ecog,1);
+
+    monopolar_subsets = {1:n_chans/2 n_chans/2+1:n_chans}; % split channels into 2 equal sets
+    bipolar_subsets = {1:(n_chans/2)-1 n_chans/2:n_chans-2}; % for indexing later on
+    ecog_bipolar = zeros(size(ecog,1)-2, size(ecog,2));
+
+    for s = 1:length(monopolar_subsets)
+        monopolar_subset = monopolar_subsets{s};
+        bipolar_subset = bipolar_subsets{s};
+    
+        ecog_monopolar_subset = ecog(monopolar_subset,:);
+        ecog_bipolar_subset = diff(ecog_monopolar_subset);
+        ecog_bipolar(bipolar_subset,:) = ecog_bipolar_subset;
+    end
+    
+    EPHYS_STRUCT.(append(signal2reref,'_bipolar')) = ecog_bipolar;
+
+elseif strcmp(signal2reref, 'lfp')
+
+    if size(lfp,1) == 8
+        lfp1 = lfp(1,:);
+        lfp2abc = mean(lfp(2:4,:),1);
+        lfp3abc = mean(lfp(5:7,:),1);
+        lfp4 = lfp(8,:);
+
+        lfp_8to4 = [lfp1; lfp2abc; lfp3abc; lfp4];
+        lfp_bipolar = diff(lfp_8to4);
+        EPHYS_STRUCT.(append(signal2reref,'_bipolar')) = lfp_bipolar;
+    else
+        lfp_bipolar = diff(lfp);
+        EPHYS_STRUCT.(append(signal2reref,'_bipolar')) = lfp_bipolar;
+    end
+end
+
+%%
+data = input('Specify signals to plot, e.g. lfp_bipolar: ');
+sampling_rate = input('Specify sampling rate: ');
+
+eegplot(data, 'srate', sampling_rate, 'winlength', round(size(data,2)/sampling_rate));
 
 %% Extract epochs from ECOG or LFP signals based on a specified time window around the stimulus artifact peaks
 EPHYS_STRUCT.sampling_rate_ecog = sampling_rate_ecog;
 EPHYS_STRUCT.sampling_rate_lfp = sampling_rate_lfp;
 
 time_window = input('Specify time window in ms w.r.t. stimulus onset, e.g. [-20 100]: ');
-signal2epoch = input('Specify signal to get epochs from, e.g. lfp_bipolar: ', 's');
+signal2epoch = input('Specify signal to epoch, e.g. lfp_bipolar: ', 's');
+sampling_rate = input('Specify sampling rate: ');
 
-EPHYS_STRUCT = ms_getepochs(EPHYS_STRUCT, time_window, signal2epoch);
-%%
-save(append(ephys_folder,"/EPHYS_STRUCT.mat"),"EPHYS_STRUCT")
+% -----
+samples_per_ms = sampling_rate/1000;
 
+start_time = time_window(1); % start time in ms
+pre_onset_len = start_time*samples_per_ms; % length from starting time to event onset, in sampling units
+
+end_time = time_window(2); % end time in ms
+post_onset_len = end_time*samples_per_ms; % length from event onset to end time, in sampling units
+% -----
+chans = EPHYS_STRUCT.(signal2epoch);
+
+epochs = zeros(size(chans,1), length(pk_locs), length(pre_onset_len:post_onset_len)); % channels x epochs x samples
+
+for c = 1:size(chans,1)
+    chan = chans(c,endpt_idcs(1):endpt_idcs(2)); % trim signal with the same start & end indices as segement from 'ms_trimsignal'
+    
+    for p = 1:length(pk_locs)
+        pk_loc = pk_locs(p);
+        
+        if pk_loc+pre_onset_len < 1 || pk_loc+post_onset_len > length(chan) % skip if there are insufficient points before/after event onset
+            continue
+        end
+
+        epoch = chan(round(pk_loc)+pre_onset_len:round(pk_loc)+post_onset_len); % pre_onset_len has negative val
+        epochs(c,p,:) = epoch; % epoch for channel 'c' around event onset 'o'
+    end
+end
+
+EPHYS_STRUCT.time_window = time_window;
+EPHYS_STRUCT.(append(signal2epoch,'_epochs')) = epochs;
+  
 %% Plot epochs
-epochs2plot = input('Specify epochs to plot, e.g. lfp_bipolar_epochs: ', 's');
-ms_plotepochs(EPHYS_STRUCT, epochs2plot)
+% epochs2plot = input('Specify epochs to plot, e.g. lfp_bipolar_epochs: ', 's');
+% ms_plotepochs(EPHYS_STRUCT, epochs2plot)
 
 % %% Apply a baseline correction to the evoked potentials
 % baseline_period = input('Specify baseline period in ms w.r.t. stimulus onset, e.g. [5 100]: ');
@@ -96,18 +297,126 @@ ms_plotepochs(EPHYS_STRUCT, epochs2plot)
 
 %% Average epochs to generate EPs
 epochs2average = input('Specify epochs to average, e.g. lfp_bipolar_epochs: ', 's');
-epoch_tensor = struct.(epochs2average);
+epochs = EPHYS_STRUCT.(epochs2average);
 
-evoked_potentials = squeeze(mean(epoch_tensor,2)); % average all the epochs per channel (2nd dimension of signal_tensor)
+evoked_potentials = squeeze(mean(epochs,2)); % average all the epochs per channel (2nd dimension of signal_tensor)
 EPHYS_STRUCT.(append(epochs2average(1:end-7),'_EPs')) = evoked_potentials;
+%%
+save(append(ephys_folder,"/EPHYS_STRUCT.mat"),"EPHYS_STRUCT")
+
+%% PLOTTING ECoG EPs
+EPs2plot = input('Specify EPs to plot, e.g. ecog_bipolar_EPs: ');
+chanlabels = input('Specify channel labels to use, e.g. EP.channelLocsSimpleBipolar: ');
+
+% Prepare region-specific colors for plotting
+rois = unique(chanlabels); % roi/s = region/s of interest
+colorpalette = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250], [0.4940 0.1840 0.5560], [0.4660 0.6740 0.1880], [0.3010 0.7450 0.9330], [0.6350 0.0780 0.1840], ...
+    [0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250], [0.4940 0.1840 0.5560], [0.4660 0.6740 0.1880], [0.3010 0.7450 0.9330], [0.6350 0.0780 0.1840], ...
+    [0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250], [0.4940 0.1840 0.5560], [0.4660 0.6740 0.1880], [0.3010 0.7450 0.9330], [0.6350 0.0780 0.1840]};
+
+roi_colors = {}; 
+for r = 1:length(rois)
+    roi_color = colorpalette{r};
+    roi_colors{r} = roi_color;
+end
+
+% Prepare figure container
+n_rows = 1;
+n_cols = 2;
+
+fig = figure('Units','Normalized','OuterPosition',[0 0 0.5 1]);
+tiles = tiledlayout(n_rows,n_cols,'TileSpacing','Compact','Padding','Compact');
+title(tiles,ephys_code,'FontWeight','bold')
+xlabel(tiles, "Time w.r.t. stimulus onset (ms)")
+
+% Split channels into 2 sets, 1 for each of the 2 columns of the figure
+n_chans = length(chanlabels);
+chan_subsets = {1:n_chans/2 n_chans/2+1:n_chans};
+for s = 1:length(chan_subsets)
+    nexttile
+    chan_subset = chan_subsets{s};
+    
+    counter = 0; % used together with vertical 'offset'
+    offset = max(EPs2plot,[],"all")-min(EPs2plot,[],"all"); % to plot signals on top of each other in 1 tile
+
+    ytick_vals = [];
+    ytick_labels = {};
+
+    for c = chan_subset  
+        yvals = EPs2plot(c,:)+offset*counter; % to plot signals on top of each other in 1 tile
+        counter = counter+1;
+      
+        
+        xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
+        color_idx = find(strcmp(rois,chanlabels{c}));
+        plot(xaxis_ms, yvals, 'Color', roi_colors{color_idx});
+        
+        ytick_vals = [ytick_vals yvals(1)];
+        ytick_labels = [ytick_labels chanlabels(c)];
+
+        hold on
+    end
+    hold off
  
-%% PLOTTING - 
-EPs2plot = input('Specify EPs to plot, e.g. ecog_bipolar_EPs: ','s');
-EPs2plot_labels = input('Specify channel labels to use, e.g. EP.channelLocsSimpleBipolar: ');
+    xlim([start_time end_time])
+    ylim([min(EPs2plot(chan_subset(1),:)) offset*counter])
+    yticks(round(ytick_vals))
+    yticklabels(ytick_labels), set(gca,'TickLabelInterpreter','none')
+end
 
-ms_plotEPs(EPHYS_STRUCT, EPs2plot, sampling_rate, EPs2plot_labels)
-%%%
 
+%% PLOTTING LFPs
+
+EPs2plot = input('Specify EPs to plot, e.g. lfp_bipolar_EPs: ');
+chanlabels = input('Specify channel labels to use as a 1xnchans cell array: ');
+ 
+fig = figure;
+counter = 0; % used together with vertical 'offset'
+offset = max(EPs2plot,[],"all")-min(EPs2plot,[],"all"); % to plot signals on top of each other in 1 tile
+ytick_vals = [];
+ytick_labels = {};
+for c = 1:length(chanlabels)
+    yvals = EPs2plot(c,:)+offset*counter; % to plot signals on top of each other in 1 tile
+    counter = counter+1;
+  
+   
+    xaxis_ms = start_time:1/samples_per_ms:end_time; % x-axis values in ms
+    plot(xaxis_ms, yvals);
+    
+    ytick_vals = [ytick_vals yvals(1)];
+    ytick_labels = [ytick_labels chanlabels(c)];
+
+    hold on
+end
+hold off
+title(ephys_code,'FontWeight','bold')
+xlabel("Time w.r.t. stimulus onset (ms)")
+xlim([start_time end_time])
+ylim([min(EPs2plot,[],"all") offset*counter])
+yticks(round(ytick_vals))
+yticklabels(ytick_labels), set(gca,'TickLabelInterpreter','none')
+ 
+%% moving-average filter
+lfp_bipolar = EPHYS_STRUCT.lfp_bipolar;
+
+window_len = 50; 
+num_coeff = (1/window_len)*ones(1,window_len);
+den_coeff = 1;
+
+% prep fig container
+fig = figure('Units','Normalized','OuterPosition',[0 0 0.5 1]);
+
+for l = 1:size(lfp_bipolar,1)
+    x = lfp_bipolar(l,:);
+
+    x_filtered = filter(num_coeff,den_coeff,x);
+
+    plot(x,'Color','black')
+    hold on
+    plot(x_filtered,'Color','red')
+    hold off
+    legend('Input Data','Filtered Data')
+end
 %% Average evoked potentials from the same region (e.g, primary motor cortex)
 %ep_dir = "C:\Users\Miocinovic_lab\Documents\mssison\EPdata_10-21-2022_ANALYZED_postopMRI.mat\";
 ep_dir = "/Users/margaritasison/Downloads/EPdata_10-21-2022_ANALYZED_postopMRI.mat/";
